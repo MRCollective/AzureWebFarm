@@ -13,33 +13,67 @@ Also, if you want to support the execution of background tasks (via console appl
 ## Documentation ##
 
 ### Web Farm Installation and Setup ###
-Ensure you have Azure SDK 1.8 installed. The web farm will likely work with 1.7, and possibly 1.6 as well, but it's built against 1.8. It's also worth using 1.8 just for the huge deployment speed improvements anyway.
+Ensure you have Azure SDK 1.8 installed. The web farm will likely work with 1.7 (not 1.6), but it's built against 1.8 and it's also worth using 1.8 just for the huge deployment speed improvements and the Windows Server 2012 / .NET 4.5 support.
 
-1. Create a new ASP.NET MVC 4 website in Visual Studio using the blank template and delete the Global.asax.cs, Global.asax, Web.config and Views/Web.config files.
-2. `Install-Package AzureWebFarm`
-3. (optional) use ReSharper (or similar) to change the namespaces to match your assembly namespace
-4. Ensure all the files in the StartUp folder are marked Copy Always
-5. Ensure App.config gets copied to bin/ProjectName.dll.config before the Azure package is created using something like this in your `.ccproj` file:
+The following instructions are the easiest way for creating a web farm from scratch. It is possible to install Azure Web Farm into an existing website. If you require assistance with this then feel free to ask for help via Twitter using @robdmoore or @mdaviesnet and #AzureWebFarm.
+
+1. Create a new Web project in Visual Studio using the `ASP.NET Empty Web Application` template and delete the `Web.config`, `Web.Test.config` and `Web.Release.config` files
+2. Use NuGet to: `Install-Package AzureWebFarm`
+3. Ensure the `App.config` file got copied to your web project directory. If it didn't then use the "Add Existing Item" dialog to find the `App.config` file in `../packages/AzureWebFarm.X.X.X.X/content/App.config`
+4. Check that the `Microsoft.WindowsAzure.Diagnostics` dll is `1.8.0.0` and copy local and the `Microsoft.WindowsAzure.ServiceRuntime` dll is `1.8.0.0` and *not* copy local.
+5. (optional) Remove the `Web.Debug.config` and `Web.Release.config` files that got created
+6. (optional) Change the namespaces in `WebRole.cs` to match your assembly namespace
+7. Create a cloud project with no roles attached to it and then add the web application you created in step 1 as a web role (Right-click on Roles in the cloud project and select Add > Web Role Project in solution)
+8. Ensure App.config gets copied to bin/ProjectName.dll.config before the Azure package is created using something like this in your `.ccproj` file (change the WebProjectName to the name of your web project). This is to ensure the binding redirects for the Azure dlls are present for the Worker Role component of the farm:
 
           <PropertyGroup>
             <WebProjectName>AzureWebFarm.Example.Web</WebProjectName>
           </PropertyGroup>
-          <Target Name="CopyAppConfigurationIntoPackage" BeforeTargets="AfterPackageComputeService" Condition="$(Env)!=''">
+          <Target Name="CopyAppConfigurationIntoPackage" BeforeTargets="AfterPackageComputeService">
             <Copy SourceFiles="$(ProjectDir)..\$(WebProjectName)\App.config" DestinationFiles="$(ProjectDir)obj\$(Configuration)\$(WebProjectName)\bin\$(WebProjectName).dll.config" />
           </Target>
 
-6. Create a cloud project with the website as a web role
-7. Look in the packages/AzureWebFarm/tools/ExampleConfigs folder to see example values to put in the .csdef and .cscfg files for it to work
-8. Look in the packages/AzureWebFarm/tools/AdminConsole folder to run the AdminConsole.exe console application to configure your web farm to add / edit / delete websites and bindings
-9. If you are migrating to AzureWebFarm from Accelerator for Azure Web Roles then you will need to transfer the data from the Bindings table to the BindingRow table and the WebSites table to the WebSiteRow table - this is a breaking change from Accelerator for Azure Web Roles, but should be the only one
+9. Configure Remote Desktop for your web role and note down the credentials since this is what you need to use as your web deploy credentials
+10. Look in the packages/AzureWebFarm.X.X.X.X/tools/ExampleConfigs folder to see example values to put in the .csdef and .cscfg files for it to work. You will need to add proper values for the `Microsoft.WindowsAzure.Plugins.Diagnostics.ConnectionString` and `DataConnectionString` settings, the certificate thumbprints and leave your RDP configuration.
+11. Look in the packages/AzureWebFarm.X.X.X.X/tools/AdminConsole folder to run the AdminConsole.exe console application to configure your web farm to add / edit / delete websites and bindings.
+12. If you are migrating to AzureWebFarm from Accelerator for Azure Web Roles then you will need to transfer the data from the Bindings table to the BindingRow table and the WebSites table to the WebSiteRow table - this is a breaking change from Accelerator for Azure Web Roles, but should be the only one.
+13. Use Visual Studio or MSBuild to create the Cloud Project package (this should generate `.cspkg` and `.cscfg` files at `bin\Release\app.publish\`)
+14. Double check that the App.config file gets correctly copied into the package (via the MSBuild snippet above) by opening the `.cspkg` file in a zip program, further opening the `.cssx` file in that zip file within the zip program and then checking that `approot/bin/WebProject.dll.config` (for the expected value of "WebProject") exists - if this isn't there then you will likely get a `System.IO.FileLoadException` when the role is started.
+15. Deploy the .cspkg and .csdef files to a Hosted Service in Azure via the Portal or using the API
+16. When your farm is deployed go to yourwebfarmhostedservicename.cloudapp.net/Probe.aspx and make sure it responds with a 200 with a blank page or a 503 with a "The service is unavailable." message. If you instead see a yellow ASP.NET error page then you need to find out why by looking at the Application event log by RDPing into the server or looking in the `WADWindowsEventLogsTable` table in your diagnostics storage account.
 
-If you get lost check out the AzureWebFarm.Example.Web and AzureWebFarm.Example.Cloud projects for guidance.
+If you get lost check out the `AzureWebFarm.Example.Web` and `AzureWebFarm.Example.Cloud` projects for guidance.
+
+### Updating to Azure Web Farm 0.9.2.X ###
+There are a number of breaking changes in the latest version of Azure Web Farm. Please see [the breaking changes document](BREAKING_CHANGES.md) to see upgrade instructions.
+
+### Web.config configuration ###
+
+If you are planning on putting more than just Azure Web Farm in the main website of your web farm and you plan on using the test site feature of Azure Web Farm (you can reference the website from /test/*sitename* as well as the domain name you configure) then you need to be careful to put all of your web.config settings in a `<location>` tag to restrict the application of the settings to that site only, e.g.:
+
+      <location path="." inheritInChildApplications="false">
+        <!-- Your settings -->
+      </location>
 
 ### Logging ###
 
-By default the web farm will log a range of diagnostics data using Windows Azure Diagnostics. If there are any errors on startup of the role then they will be placed in the exceptions blob container in the storage account configured for diagnostics. If there are any errors during the operation of the farm then they will appear in the `WADLogs` table - note: there is a lot of noise in there due to the debugging logging.
+By default the web farm will log a range of diagnostics data using Windows Azure Diagnostics. If there are any errors on startup of the role then they will be placed in the `exceptions` blob container in the storage account configured for diagnostics. If there are any errors during the operation of the farm then they will appear in the `WADLogs` table - note: there is a lot of noise in there due to the debugging logging.
 
 If you would like more fine-grained control over logging then simply pass in an `ILoggerFactory` ([from Castle.Core](http://docs.castleproject.org/Windsor.Logging-Facility.ashx)) to the constructor of `WebFarmRole` in your `WebRole` class.
+
+### Diagnosing Problems ###
+
+There are a number of places that you can look to get diagnostics information (plus you can extend this by using the logging functionality mentioned above):
+
+* `exceptions` blob container - Any errors when starting up the farm will be posted here (this is the first place to look if your role is constantly recycling after deploying)
+* `SyncStatusRow` - This shows the time that the sync status of each site / instance combination was updated:
+	* `NotCreated` means the site is currently being created
+	* `Created` means the site has been created and currently has the dummy instructions page
+	* `Deployed` means you have made at least one deployment for that site and the Timestamp for that record gives an indication of when that instance last synced that site
+	* `Error` means there was an exception thrown while trying to deploy the site and the `LastError` property should contain the exception message that occurred
+* `sites` blob container - This contains the latest web deploy package for each site
+* `WADLogsTable` - By default all logging information is sent here via the Windows Azure Diagnostics Trace Listener including exceptions that are caught (to look for just exceptions search with the criteria `Level eq 2`)
+* `WADWindowsEventLogs` table - All `Application` event logs will be put here (there is a 1 minute latency) so any uncaught exceptions will show up here; this generally won't have useful information, but sometimes it's worth checking it out
 
 ### Background Worker Setup ###
 If there is a subfolder within the bin directory of your website that contains a `.exe` file of the same name as the subfolder, e.g. `MySiteRoot\bin\SubFolder\SubFolder.exe` then the contents of the sub folder will be copied to an isolated folder and the executable file will be run.
@@ -80,11 +114,12 @@ If you do this then you probably should modify the `AddBackgroundWorker` task ab
 Note: If you include a `web.config` file in the background worker folder within the web deploy package then it will not be overwritten by the `web.config` file deployed to the website.
 
 ## Contributions ##
-If you would like to contribute to this project then feel free to communicate with myself via Twitter [@robdmoore](http://twitter.com/robdmoore) or alternatively send a pull request.
+If you would like to contribute to this project then feel free to communicate with us via Twitter [@robdmoore](http://twitter.com/robdmoore) / [@mdaviesnet](http://twitter.com/mdaviesnet) or alternatively send a pull request.
 
 ## Changelog ##
 
 ### Version 0.9.2.X ###
+* Note: Breaking changes are noted in the `BREAKING_CHANGES.md` file
 * If a `web.config` file is included with a background worker application then it will no longer cause an exception in the web farm and in fact will not be overwitten
 * Upgraded to Azure SDK 1.8
 * Added missing HTTP certificate config in the example cloud project config files
@@ -95,6 +130,8 @@ If you would like to contribute to this project then feel free to communicate wi
 * Added configurable logging via Castle.Core
 * Removed dependency on Azure Storage within uncaught code called from OnRun() - this means that the web farm should not go down if there is an Azure Storage outage
 * Added configuration setting to allow for syncing to be disabled without needing to redeploy the farm
+* Added a configuration setting and functionality to ensure all web deploy connections get funneled to a single role instance. This resolves an issue when using MsDeploy v3+ on the server (different connections in a deployment go to different instances, causing a Root Element is Missing XML error)
+* Changed the example config files to use Windows Server 2012 - if you want to change your existing farm to use this too then check out the `BREAKING_CHANGES.md` file
 
 ### Version 0.9.1.2 ###
 * Logged the last error that occurred when updating sync status to error

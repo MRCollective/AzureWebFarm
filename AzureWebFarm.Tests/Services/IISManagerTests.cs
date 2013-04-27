@@ -2,11 +2,14 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using AzureToolkit;
 using AzureWebFarm.Entities;
 using AzureWebFarm.Helpers;
 using AzureWebFarm.Services;
+using AzureWebFarm.Storage;
 using Castle.Core.Logging;
 using Microsoft.Web.Administration;
+using Microsoft.WindowsAzure;
 using NUnit.Framework;
 using Binding = AzureWebFarm.Entities.Binding;
 
@@ -22,6 +25,10 @@ namespace AzureWebFarm.Tests.Services
         [TestFixtureSetUp]
         public void FixtureSetup()
         {
+
+            AzureRoleEnvironment.DeploymentId = () => "DEPLOYMENTID";
+            AzureRoleEnvironment.CurrentRoleInstanceId = () => "ROLEINSTANCEID";
+
             using (var serverManager = new ServerManager())
             {
                 _defaultSiteAlreadyExisted = serverManager.Sites.Count(s => s.Name == RoleWebsiteName) > 0;
@@ -152,7 +159,8 @@ namespace AzureWebFarm.Tests.Services
                 }
             };
 
-            var iisManager = new IISManager(LocalSitesPath, TempSitesPath, null, new NullLogFactory(), LoggerLevel.Debug);
+            var factory = new AzureStorageFactory(CloudStorageAccount.DevelopmentStorageAccount);
+            var iisManager = new IISManager(LocalSitesPath, TempSitesPath, new SyncStatusRepository(factory), new ConsoleFactory(), LoggerLevel.Debug);
             var sites = new List<WebSite> {contosoWebSite};
 
             iisManager.UpdateSites(sites, _excludedSites);
@@ -225,7 +233,8 @@ namespace AzureWebFarm.Tests.Services
                 }
             };
 
-            var iisManager = new IISManager(LocalSitesPath, TempSitesPath, null, new NullLogFactory(), LoggerLevel.Debug);
+            var factory = new AzureStorageFactory(CloudStorageAccount.DevelopmentStorageAccount);
+            var iisManager = new IISManager(LocalSitesPath, TempSitesPath, new SyncStatusRepository(factory), new ConsoleFactory(), LoggerLevel.Debug);
             var sites = new List<WebSite> {fabrikamWebSite};
 
             iisManager.UpdateSites(sites, _excludedSites);
@@ -293,7 +302,8 @@ namespace AzureWebFarm.Tests.Services
                 }
             };
 
-            var iisManager = new IISManager(LocalSitesPath, TempSitesPath, null, new NullLogFactory(), LoggerLevel.Debug);
+            var factory = new AzureStorageFactory(CloudStorageAccount.DevelopmentStorageAccount);
+            var iisManager = new IISManager(LocalSitesPath, TempSitesPath, new SyncStatusRepository(factory), new ConsoleFactory(), LoggerLevel.Debug);
             var sites = new List<WebSite> {contosoWebSite, fabrikamWebSite};
 
             iisManager.UpdateSites(sites, _excludedSites);
@@ -352,7 +362,8 @@ namespace AzureWebFarm.Tests.Services
                 }
             };
 
-            var iisManager = new IISManager(LocalSitesPath, TempSitesPath, null, new NullLogFactory(), LoggerLevel.Debug);
+            var factory = new AzureStorageFactory(CloudStorageAccount.DevelopmentStorageAccount);
+            var iisManager = new IISManager(LocalSitesPath, TempSitesPath, new SyncStatusRepository(factory), new ConsoleFactory(), LoggerLevel.Debug);
             var sites = new List<WebSite> {contosoWebSite, fabrikamWebSite};
 
             iisManager.UpdateSites(sites, _excludedSites);

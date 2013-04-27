@@ -42,7 +42,7 @@ namespace AzureWebFarm.Tests.Services
             File.WriteAllText(Path.Combine(SitesPath, SiteName, "web.config"), WebConfigContents);
             File.WriteAllText(Path.Combine(SitesPath, SiteName2, "web.config"), WebConfig2Contents);
 
-            _service = new BackgroundWorkerService(SitesPath, ExePath, new NullLogFactory(), LoggerLevel.Debug);
+            _service = new BackgroundWorkerService(SitesPath, ExePath, new ConsoleFactory(), LoggerLevel.Debug);
         }
 
         [TearDown]
@@ -175,6 +175,14 @@ namespace AzureWebFarm.Tests.Services
             _service.Wait(TimeSpan.FromSeconds(5));
             AssertAppWasRun(SiteName, 3, "2");
             AssertAppWasRun(SiteName2, 3, "2");
+        }
+
+        [Test]
+        public void Do_nothing_if_no_bin_folder_present()
+        {
+            Directory.CreateDirectory(Path.Combine(SitesPath, "test"));
+
+            _service.Update("test");
         }
     }
 }

@@ -10,9 +10,10 @@ namespace AzureWebFarm.Storage
     public interface ISyncStatusRepository
     {
         void RemoveWebSiteStatus(string webSiteName);
-        void UpdateStatus(SyncStatus syncStatus);
+        void UpdateStatus(string webSiteName, SyncInstanceStatus status, Exception lastError = null);
         IEnumerable<SyncStatus> RetrieveSyncStatus(string webSiteName);
         IEnumerable<SyncStatus> RetrieveSyncStatusByInstanceId(string roleInstanceId);
+        void Update(SyncStatus syncStatus);
     }
 
     public class SyncStatusRepository : ISyncStatusRepository
@@ -34,8 +35,23 @@ namespace AzureWebFarm.Storage
             }
         }
 
-        public void UpdateStatus(SyncStatus syncStatus)
+        public void Update(SyncStatus syncStatus)
         {
+            _table.AddOrUpdate(syncStatus.ToRow());
+        }
+
+        public void UpdateStatus(string webSiteName, SyncInstanceStatus status, Exception lastError = null)
+        {
+            var syncStatus = new SyncStatus
+            {
+                SiteName = webSiteName,
+                RoleInstanceId = AzureRoleEnvironment.CurrentRoleInstanceId(),
+                DeploymentId = AzureRoleEnvironment.DeploymentId(),
+                Status = status,
+                IsOnline = true,
+                LastError = lastError
+            };
+
             _table.AddOrUpdate(syncStatus.ToRow());
         }
 

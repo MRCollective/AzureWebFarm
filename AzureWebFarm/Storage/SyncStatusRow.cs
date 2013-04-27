@@ -22,5 +22,7 @@ namespace AzureWebFarm.Storage
         public string Status { get; set; }
 
         public bool? IsOnline { get; set; }
+
+        public string LastError { get; set; }
     }
 }

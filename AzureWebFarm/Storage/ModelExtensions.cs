@@ -1,4 +1,5 @@
 ﻿using System;
+using AzureToolkit;
 using AzureWebFarm.Entities;
 using AzureWebFarm.Helpers;
 
@@ -87,7 +88,8 @@ namespace AzureWebFarm.Storage
             return new SyncStatusRow(deploymentId, roleInstanceId, model.SiteName)
             {
                 Status = model.Status.ToString(),
-                IsOnline = model.IsOnline
+                IsOnline = model.IsOnline,
+                LastError = model.LastError.TraceInformation()
             };
         }
 

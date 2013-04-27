@@ -1,4 +1,6 @@
-﻿using Microsoft.WindowsAzure.ServiceRuntime;
+﻿using Castle.Core.Logging;
+using Microsoft.WindowsAzure.Diagnostics;
+using Microsoft.WindowsAzure.ServiceRuntime;
 
 namespace AzureWebFarm.Example.Web
 {
@@ -8,7 +10,7 @@ namespace AzureWebFarm.Example.Web
 
         public WebRole()
         {
-            _webRole = new WebFarmRole();
+            _webRole = new WebFarmRole(null, LoggerLevel.Debug, LogLevel.Verbose);
         }
 
         public override bool OnStart()

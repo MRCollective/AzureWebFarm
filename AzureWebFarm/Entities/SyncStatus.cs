@@ -16,6 +16,6 @@ namespace AzureWebFarm.Entities
 
         public bool IsOnline { get; set; }
         
-        public string LastError { get; set; }
+        public Exception LastError { get; set; }
     }
 }

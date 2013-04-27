@@ -22,6 +22,9 @@
     <iconUrl>
       https://raw.github.com/robdmoore/AzureWebFarm/master/logo.png
     </iconUrl>
+    <releaseNotes>
+      Please see https://github.com/robdmoore/AzureWebFarm/blob/master/BREAKING_CHANGES.md for any breaking changes.
+    </releaseNotes>
     <tags>
       azure, iis, web farm, msdeploy, web deploy, web role
     </tags>
@@ -31,7 +34,7 @@
     <dependencies>
       <dependency id="WindowsAzure.Storage" version="1.7" />
       <dependency id="AzureToolkit" version="2.4.10" />
-      <dependency id="Microsoft.WindowsAzure.ConfigurationManager" version="1.7.0.3" />
+      <dependency id="Microsoft.WindowsAzure.ConfigurationManager" version="1.8" />
       <dependency id="Castle.Core" version="3.2" />
     </dependencies>
     <frameworkAssemblies>
@@ -47,11 +50,10 @@
     <!-- todo: <file src="AzureWebFarm\bin\Release\AzureWebFarm.XML" target="lib\NET40" />-->
     <file src="AzureWebFarm.Example.Web\app.config" target="content" />
     <file src="AzureWebFarm.Example.Web\web.config" target="content" />
+    <file src="AzureWebFarm.Example.Web\Probe.aspx.cs" target="content" />
+    <file src="AzureWebFarm.Example.Web\Probe.aspx" target="content" />
     <file src="AzureWebFarm.Example.Web\Default.aspx" target="content" />
     <file src="AzureWebFarm.Example.Web\WebRole.cs" target="content" />
-    <file src="AzureWebFarm.Example.Web\Global.asax.cs" target="content" />
-    <file src="AzureWebFarm.Example.Web\Global.asax" target="content" />
-    <file src="AzureWebFarm.Example.Web\Startup\*.*" target="content\Startup" />
     <file src="AzureWebFarm.Example.Cloud\ServiceConfiguration.Cloud.cscfg" target="tools\ExampleConfigs" />
     <file src="AzureWebFarm.Example.Cloud\ServiceDefinition.csdef" target="tools\ExampleConfigs" />
     <file src="AzureWebFarm.AdminConsole\bin\Release\*.*" target="tools\AdminConsole" />

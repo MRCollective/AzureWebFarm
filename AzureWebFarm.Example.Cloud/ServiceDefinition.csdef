@@ -1,10 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ServiceDefinition name="AzureWebFarm.Example.Cloud" xmlns="http://schemas.microsoft.com/ServiceHosting/2008/10/ServiceDefinition" schemaVersion="2012-10.1.8">
+  <LoadBalancerProbes>
+    <LoadBalancerProbe name="WebDeploy" protocol="http" port="80" path="Probe.aspx" intervalInSeconds="5" timeoutInSeconds="100" />
+  </LoadBalancerProbes>
   <WebRole name="AzureWebFarm.Example.Web" vmsize="Small">
     <Runtime executionContext="elevated" />
-    <Startup>
-      <Task commandLine="Startup\ConfigureIIS.cmd" executionContext="elevated" taskType="simple" />
-    </Startup>
     <Sites>
       <Site name="Web">
         <Bindings>
@@ -14,9 +14,9 @@
       </Site>
     </Sites>
     <Endpoints>
-      <InputEndpoint name="HttpIn" protocol="http" port="80" />
+      <InputEndpoint name="HttpIn" protocol="http" port="80" localPort="80" />
       <InputEndpoint name="HttpsIn" protocol="https" port="443" localPort="443" certificate="HTTPS" />
-      <InputEndpoint name="WebDeployIn" protocol="tcp" port="8172" localPort="8172" />
+      <InputEndpoint name="Microsoft.WindowsAzure.Plugins.WebDeploy.InputEndpoint" protocol="tcp" port="8172" localPort="8172" loadBalancerProbe="WebDeploy" />
       <!-- unused, just there so instance discovery works -->
       <InternalEndpoint name="UnusedInternal" protocol="http" port="88" />
     </Endpoints>
@@ -24,6 +24,7 @@
       <Import moduleName="Diagnostics" />
       <Import moduleName="RemoteAccess" />
       <Import moduleName="RemoteForwarder" />
+      <Import moduleName="WebDeploy" />
     </Imports>
     <LocalResources>
       <LocalStorage name="Sites" cleanOnRoleRecycle="true" sizeInMB="2500" />

@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using AzureToolkit;
 using AzureWebFarm.Entities;
 using AzureWebFarm.Helpers;
 using AzureWebFarm.Storage;
@@ -53,26 +51,19 @@ namespace AzureWebFarm.Services
             _siteDeployTimes = new Dictionary<string, DateTime>();
             _logger = loggerFactory.Create(GetType(), logLevel);
 
-            var sitesContainerName = AzureRoleEnvironment.GetConfigurationSettingValue(Constants.WebDeployPackagesBlobContainerName).ToLowerInvariant();
+            var sitesContainerName = AzureRoleEnvironment.GetConfigurationSettingValue(Constants.WebDeployPackagesBlobContainerKey).ToLowerInvariant();
             _container = storageAccount.CreateCloudBlobClient().GetContainerReference(sitesContainerName);
             _container.CreateIfNotExist();
         }
         #endregion
 
         #region Public methods
-        public void UpdateAllSitesSyncStatus(string roleInstanceId, bool isOnline)
+        public void SetCurrentInstanceSitesOffline()
         {
-            foreach (var syncStatus in _syncStatusRepository.RetrieveSyncStatusByInstanceId(roleInstanceId))
+            foreach (var syncStatus in _syncStatusRepository.RetrieveSyncStatusByInstanceId(AzureRoleEnvironment.CurrentRoleInstanceId()))
             {
-                var newSyncStatus = new SyncStatus
-                {
-                    SiteName = syncStatus.SiteName,
-                    RoleInstanceId = roleInstanceId,
-                    Status = syncStatus.Status,
-                    IsOnline = isOnline
-                };
-
-                _syncStatusRepository.UpdateStatus(newSyncStatus);
+                syncStatus.IsOnline = false;
+                _syncStatusRepository.Update(syncStatus);
             }
         }
 
@@ -111,7 +102,7 @@ namespace AzureWebFarm.Services
 
         #region Sync Once
 
-        private void SyncOnce()
+        public void SyncOnce()
         {
             _logger.Debug("Synchronizing role instances.");
 
@@ -382,12 +373,13 @@ namespace AzureWebFarm.Services
 
                             try
                             {
-                                using (DeploymentObject deploymentObject = DeploymentManager.CreateObject(DeploymentWellKnownProvider.Package, packageFile))
+                                using (var deploymentObject = DeploymentManager.CreateObject(DeploymentWellKnownProvider.Package, packageFile))
                                 {
-                                    deploymentObject.SyncTo(DeploymentWellKnownProvider.DirPath, sitePath, new DeploymentBaseOptions(), new DeploymentSyncOptions());
+                                    deploymentObject.SyncTo(DeploymentWellKnownProvider.DirPath, sitePath, new DeploymentBaseOptions(), new DeploymentSyncOptions {UseChecksum = true});
                                 }
 
                                 UpdateSyncStatus(site, SyncInstanceStatus.Deployed);
+                                _logger.DebugFormat(string.Format("Calling OnSiteUpdated event for {0}...", site));
                                 OnSiteUpdated(site);
                                 _siteDeployTimes[site] = DateTime.UtcNow;
                             }
@@ -426,7 +418,7 @@ namespace AzureWebFarm.Services
 
                         if (!_siteDeployTimes.ContainsKey(siteName))
                         {
-                            _siteDeployTimes.Add(siteName, DateTime.MinValue);
+                            _siteDeployTimes.Add(siteName, siteLastModifiedTime);
                         }
 
                         _logger.DebugFormat("[IIS => Local Storage] - Site last modified time: '{0}'", siteLastModifiedTime);
@@ -454,6 +446,8 @@ namespace AzureWebFarm.Services
                                     deploymentObject.SyncTo(DeploymentWellKnownProvider.Package, packageFile, new DeploymentBaseOptions(), new DeploymentSyncOptions());
                                 }
 
+                                _logger.DebugFormat(string.Format("Calling OnSiteUpdated event for {0}...", siteName));
+                                OnSiteUpdated(siteName);
                                 _siteDeployTimes[siteName] = DateTime.UtcNow;
                             }
                             catch (Exception ex)
@@ -537,18 +531,9 @@ namespace AzureWebFarm.Services
 
         private void UpdateSyncStatus(string webSiteName, SyncInstanceStatus status, Exception lastError = null)
         {
-            var syncStatus = new SyncStatus
-            {
-                SiteName = webSiteName,
-                RoleInstanceId = AzureRoleEnvironment.CurrentRoleInstanceId(),
-                Status = status,
-                IsOnline = true,
-                LastError = lastError == null ? null : lastError.TraceInformation()
-            };
-
             try
             {
-                _syncStatusRepository.UpdateStatus(syncStatus);
+                _syncStatusRepository.UpdateStatus(webSiteName, status, lastError);
             }
             catch (Exception e)
             {
@@ -564,9 +549,16 @@ namespace AzureWebFarm.Services
 
         protected virtual void OnPing()
         {
-            var handler = Ping;
-            if (handler != null)
-                handler(this, EventArgs.Empty);
+            try
+            {
+                var handler = Ping;
+                if (handler != null)
+                    handler(this, EventArgs.Empty);
+            }
+            catch (Exception e)
+            {
+                _logger.Error("Error executing OnPing event", e);
+            }
         }
 
         public delegate void SiteUpdatedEventHandler(object sender, EventArgs e, string siteName);
@@ -574,18 +566,32 @@ namespace AzureWebFarm.Services
 
         protected virtual void OnSiteUpdated(string siteName)
         {
-            var handler = SiteUpdated;
-            if (handler != null)
-                handler(this, EventArgs.Empty, siteName);
+            try
+            {
+                var handler = SiteUpdated;
+                if (handler != null)
+                    handler(this, EventArgs.Empty, siteName);
+            }
+            catch (Exception e)
+            {
+                _logger.ErrorFormat(e, "Error executing OnSiteUpdated event for site {0}", siteName);
+            }
         }
 
         public event SiteUpdatedEventHandler SiteDeleted;
 
         protected virtual void OnSiteDeleted(string siteName)
         {
-            var handler = SiteDeleted;
-            if (handler != null)
-                handler(this, EventArgs.Empty, siteName);
+            try
+            {
+                var handler = SiteDeleted;
+                if (handler != null)
+                    handler(this, EventArgs.Empty, siteName);
+            }
+            catch (Exception e)
+            {
+                _logger.Error("Error executing OnSiteDeleted event", e);
+            }
         }
         #endregion
     }

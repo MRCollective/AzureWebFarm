@@ -100,11 +100,16 @@ namespace AzureWebFarm.Services
 
         public IEnumerable<Executable> FindExecutables(string siteName)
         {
-            var subDirs = Directory.EnumerateDirectories(Path.Combine(_sitesPath, siteName, "bin"));
+            var binFolder = Path.Combine(_sitesPath, siteName, "bin");
+
+            if (!Directory.Exists(binFolder))
+                yield break;
+
+            var subDirs = Directory.EnumerateDirectories(binFolder);
             foreach (var d in subDirs)
             {
                 var subDir = d.Split(Path.DirectorySeparatorChar).Last();
-                var exe = new Executable(Path.Combine(_sitesPath, siteName, "bin"), subDir);
+                var exe = new Executable(binFolder, subDir);
                 
                 if (exe.Exists())
                     yield return exe;

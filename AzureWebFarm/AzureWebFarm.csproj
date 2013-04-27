@@ -45,9 +45,8 @@
     <Reference Include="Microsoft.Web.Deployment, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.WindowsAzure.Configuration, Version=1.7.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Microsoft.WindowsAzure.ConfigurationManager.1.7.0.3\lib\net35-full\Microsoft.WindowsAzure.Configuration.dll</HintPath>
+    <Reference Include="Microsoft.WindowsAzure.Configuration, Version=1.8.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.WindowsAzure.ConfigurationManager.1.8.0.0\lib\net35-full\Microsoft.WindowsAzure.Configuration.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.WindowsAzure.Diagnostics, Version=1.7.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -80,6 +79,10 @@
     <Compile Include="Entities\FileEntry.cs" />
     <Compile Include="Entities\SyncStatus.cs" />
     <Compile Include="Entities\WebSite.cs" />
+    <Compile Include="Helpers\AutoRenewLease.cs" />
+    <Compile Include="Helpers\AzureDiagnosticsTraceListenerFactory.cs" />
+    <Compile Include="Helpers\LeaseBlobExtensions.cs" />
+    <Compile Include="Services\WebDeployService.cs" />
     <Compile Include="Storage\ModelExtensions.cs" />
     <Compile Include="Helpers\AzureRoleEnvironment.cs" />
     <Compile Include="Helpers\Constants.cs" />

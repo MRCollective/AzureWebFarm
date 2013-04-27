@@ -9,6 +9,7 @@ using AzureWebFarm.Entities;
 using AzureWebFarm.Helpers;
 using AzureWebFarm.Services;
 using AzureWebFarm.Storage;
+using AzureWebFarm.Tests.Services.Base;
 using Castle.Core.Logging;
 using Microsoft.Web.Administration;
 using Microsoft.WindowsAzure;
@@ -19,7 +20,7 @@ using Binding = AzureWebFarm.Entities.Binding;
 namespace AzureWebFarm.Tests.Services
 {
     [TestFixture]
-    public class SyncServiceShould
+    public class SyncServiceShould : ServiceTestBase
     {
         #region Setup
 
@@ -34,25 +35,16 @@ namespace AzureWebFarm.Tests.Services
         private IAzureTable<WebSiteRow> _webSiteTable;
         private IAzureTable<BindingRow> _bindingTable;
         private List<string> _excludedSites;
-
-        public string GetConfigValue(string setting)
-        {
-            switch (setting)
-            {
-                case "SitesContainerName":
-                    return "sites";
-            }
-            return string.Empty;
-        }
-
+        
         [TestFixtureSetUp]
-        public void FixtureSetup()
+        protected override void FixtureSetup()
         {
+            base.FixtureSetup();
+
             // RoleEnvironment
             AzureRoleEnvironment.DeploymentId = () => "DEPLOYMENTID";
             AzureRoleEnvironment.CurrentRoleInstanceId = () => "ROLEINSTANCEID";
-            AzureRoleEnvironment.GetConfigurationSettingValue = GetConfigValue;
-
+            
             // File Resource Paths
             var basePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().CodeBase.Replace("file:///", ""));
             _sitePath = Path.Combine(basePath, "Sites");
@@ -90,8 +82,8 @@ namespace AzureWebFarm.Tests.Services
                 new string[] { },
                 _excludedSites,
                 () => true,
-                new IISManager(_sitePath, _tempPath, new SyncStatusRepository(factory), new NullLogFactory(), LoggerLevel.Debug),
-                new NullLogFactory(),
+                new IISManager(_sitePath, _tempPath, new SyncStatusRepository(factory), new ConsoleFactory(), LoggerLevel.Debug),
+                new ConsoleFactory(),
                 LoggerLevel.Debug
             );
         }
@@ -178,6 +170,58 @@ namespace AzureWebFarm.Tests.Services
         }
 
         [Test]
+        public void Update_iis_sites_from_table_storage_but_dont_sync_package_if_site_was_new()
+        {
+            using (var serverManager = new ServerManager())
+            {
+                // Arrange
+                var website = SetupWebsiteTest(serverManager);
+
+                try
+                {
+                    // Act
+                    _syncService.SyncOnce();
+
+                    // Assert
+                    Assert.That(File.Exists(Path.Combine(_sitePath, website.Name, "index.html")), "index.html should be in site");
+                    Assert.That(File.Exists(Path.Combine(_tempPath, website.Name, string.Format("{0}.zip", website.Name))), Is.False, "test.zip shouldn't be there");
+                }
+                finally
+                {
+                    // Cleanup
+                    CleanupWebsiteTest(serverManager);
+                }
+            }
+        }
+
+        [Test]
+        public void Sync_new_site_to_iis()
+        {
+            using (var serverManager = new ServerManager())
+            {
+                // Arrange
+                var website = SetupWebsiteTest(serverManager);
+                UploadZipToBlob(website.Name, Path.Combine(_resourcesPath, "Package.zip"));
+
+                try
+                {
+                    // Act
+                    _syncService.SyncOnce();
+
+                    //Assert
+                    Assert.That(File.Exists(Path.Combine(_sitePath, website.Name, "index.html")), Is.False, "index.html shouldn't be in site");
+                    Assert.That(File.Exists(Path.Combine(_sitePath, website.Name, "iisstart.htm")), "iisstart.html wasn't synced");
+                    Assert.That(File.Exists(Path.Combine(_sitePath, website.Name, "welcome.png")), "welcome.png wasn't synced");
+                }
+                finally
+                {
+                    // Cleanup
+                    CleanupWebsiteTest(serverManager);
+                }
+            }
+        }
+
+        [Test]
         public void Update_temp_storage_from_iis()
         {
             using (var serverManager = new ServerManager())
@@ -192,6 +236,10 @@ namespace AzureWebFarm.Tests.Services
 
                 try
                 {
+                    // Arrange
+                    _syncService.PackageSitesToLocal(); // First time package sites to local is called it stored the modified date of the site
+                    File.WriteAllText(Path.Combine(_sitePath, website.Name, "synced_file.txt"), "synced");
+
                     // Act
                     _syncService.PackageSitesToLocal();
 
@@ -265,6 +313,7 @@ namespace AzureWebFarm.Tests.Services
                     Directory.CreateDirectory(Path.Combine(_tempPath, website.Name));
                     var tempPath = Path.Combine(_tempPath, website.Name, string.Format("{0}.zip", website.Name));
                     var deployFile = File.ReadAllBytes(Path.Combine(_resourcesPath, "Package.zip"));
+                    File.WriteAllText(Path.Combine(_sitePath, "test2.txt"), "test");
                     File.WriteAllBytes(tempPath, deployFile);
                     if (localFilesAreNewer)
                     {
@@ -278,6 +327,7 @@ namespace AzureWebFarm.Tests.Services
                     _syncService.DeploySitesFromLocal();
 
                     // Assert
+                    Assert.That(File.Exists(Path.Combine(_sitePath, website.Name, "test2.txt")), Is.False, "text2.txt should have been removed by the sync");
                     if (localFilesAreNewer)
                     {
                         Assert.That(File.Exists(Path.Combine(_sitePath, website.Name, "iisstart.htm")), Is.False, "iisstart.html was synced when it shouldn't have been");

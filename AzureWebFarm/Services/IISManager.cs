@@ -105,7 +105,7 @@ namespace AzureWebFarm.Services
                     if (iisSite == null)
                     {
                         // Update Status
-                        UpdateSyncStatus(siteName, SyncInstanceStatus.NotCreated);
+                        _syncStatusRepository.UpdateStatus(siteName, SyncInstanceStatus.NotCreated);
 
                         // Create physical path
                         if (!Directory.Exists(sitePath))
@@ -175,7 +175,7 @@ namespace AzureWebFarm.Services
                         UpdateApplications(site, serverManager, siteName, sitePath, appPool);
 
                         // Update Sync Status
-                        UpdateSyncStatus(siteName, SyncInstanceStatus.Created);
+                        _syncStatusRepository.UpdateStatus(siteName, SyncInstanceStatus.Created);
                     }
                     else
                     {
@@ -227,7 +227,7 @@ namespace AzureWebFarm.Services
                     }
                     catch (Exception e)
                     {
-                        UpdateSyncStatus(siteName, SyncInstanceStatus.Error);
+                        _syncStatusRepository.UpdateStatus(siteName, SyncInstanceStatus.Error, e);
                         _logger.ErrorFormat(e, "Error committing changes for site '{0}'", site.Name);
                     }
                 }
@@ -322,23 +322,6 @@ namespace AzureWebFarm.Services
             foreach (var app in applicationsToRemove.ToArray())
             {
                 adminSite.Applications.Remove(app);
-            }
-        }
-
-        private void UpdateSyncStatus(string webSiteName, SyncInstanceStatus status)
-        {
-            if (_syncStatusRepository != null)
-            {
-                var syncStatus = new SyncStatus
-                {
-                    SiteName = webSiteName,
-                    RoleInstanceId = AzureRoleEnvironment.CurrentRoleInstanceId(),
-                    DeploymentId = AzureRoleEnvironment.DeploymentId(),
-                    Status = status,
-                    IsOnline = true
-                };
-
-                _syncStatusRepository.UpdateStatus(syncStatus);
             }
         }
     }

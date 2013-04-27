@@ -26,7 +26,7 @@ namespace AzureWebFarm.Helpers
             blob.UploadText(ex.ToString());
         }
 
-        public static void ConfigureDiagnosticMonitor()
+        public static void ConfigureDiagnosticMonitor(LogLevel logLevel)
         {
             var transferPeriod = TimeSpan.FromMinutes(5);
             const int bufferQuotaInMb = 100;
@@ -43,7 +43,7 @@ namespace AzureWebFarm.Helpers
             // Windows Azure Logs
             config.Logs.ScheduledTransferPeriod = transferPeriod;
             config.Logs.BufferQuotaInMB = bufferQuotaInMb;
-            config.Logs.ScheduledTransferLogLevelFilter = LogLevel.Information;
+            config.Logs.ScheduledTransferLogLevelFilter = logLevel;
 
             // File-based logs
             config.Directories.ScheduledTransferPeriod = transferPeriod;
@@ -57,7 +57,7 @@ namespace AzureWebFarm.Helpers
             config.WindowsEventLog.DataSources.Add("Application!*");
             config.WindowsEventLog.DataSources.Add("System!*");
             config.WindowsEventLog.ScheduledTransferPeriod = transferPeriod;
-            config.WindowsEventLog.ScheduledTransferLogLevelFilter = LogLevel.Information;
+            config.WindowsEventLog.ScheduledTransferLogLevelFilter = logLevel;
             config.WindowsEventLog.BufferQuotaInMB = bufferQuotaInMb;
 
             // Performance Counters
@@ -74,6 +74,7 @@ namespace AzureWebFarm.Helpers
             config.PerformanceCounters.BufferQuotaInMB = bufferQuotaInMb;
 
             DiagnosticMonitor.Start(Constants.DiagnosticsConnectionStringKey, config);
+            Trace.TraceInformation("Diagnostics configured.");
         }
     }
 }

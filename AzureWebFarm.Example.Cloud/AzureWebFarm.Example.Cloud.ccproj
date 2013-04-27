@@ -37,9 +37,6 @@
     <ServiceConfiguration Include="ServiceConfiguration.Cloud.cscfg" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Profiles" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\AzureWebFarm.Example.Web\AzureWebFarm.Example.Web.csproj">
       <Name>AzureWebFarm.Example.Web</Name>
       <Project>{ab0c275a-7c67-4d5a-bfc8-52b490ff6516}</Project>
@@ -58,7 +55,7 @@
   <PropertyGroup>
     <WebProjectName>AzureWebFarm.Example.Web</WebProjectName>
   </PropertyGroup>
-  <Target Name="CopyAppConfigurationIntoPackage" BeforeTargets="AfterPackageComputeService" Condition="$(Env)!=''">
+  <Target Name="CopyAppConfigurationIntoPackage" BeforeTargets="AfterPackageComputeService">
     <Copy SourceFiles="$(ProjectDir)..\$(WebProjectName)\App.config" DestinationFiles="$(ProjectDir)obj\$(Configuration)\$(WebProjectName)\bin\$(WebProjectName).dll.config" />
   </Target>
 </Project>

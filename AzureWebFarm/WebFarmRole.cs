@@ -13,26 +13,36 @@ using AzureWebFarm.Services;
 using AzureWebFarm.Storage;
 using Castle.Core.Logging;
 using Microsoft.WindowsAzure;
+using Microsoft.WindowsAzure.Diagnostics;
 using Microsoft.WindowsAzure.ServiceRuntime;
 
 namespace AzureWebFarm
 {
     public class WebFarmRole
     {
-        private readonly ILoggerFactory _logFactory;
         private SyncService _syncService;
         private BackgroundWorkerService _backgroundWorker;
+        private WebDeployService _webDeployService;
+        private readonly ILoggerFactory _logFactory;
         private readonly ILogger _logger;
         private readonly LoggerLevel _logLevel;
+        private readonly LogLevel _diagnosticsLogLevel;
 
-        public WebFarmRole(ILoggerFactory logFactory = null, LoggerLevel? loggerLevel = null)
+        /// <summary>
+        /// Instantiates an Azure Web Farm Role.
+        /// </summary>
+        /// <param name="logFactory">The Castle.Core Logger Factory to use for logging, AzureDiagnosticsTraceListenerFactory by default</param>
+        /// <param name="loggerLevel">The Castle.Core Log Level to use for logging, LoggerLevel.Info by default</param>
+        /// <param name="diagnosticsLogLevel">The log level to use for Azure Diagnostics, LogLevel.Information by default</param>
+        public WebFarmRole(ILoggerFactory logFactory = null, LoggerLevel? loggerLevel = null, LogLevel? diagnosticsLogLevel = null)
         {
             // If a log factory isn't specified use Trace, which will end up in diagnostics
             if (logFactory == null)
-                logFactory = new TraceLoggerFactory();
+                logFactory = new AzureDiagnosticsTraceListenerFactory();
             _logFactory = logFactory;
-            _logLevel = loggerLevel ?? LoggerLevel.Debug;
+            _logLevel = loggerLevel ?? LoggerLevel.Info;
             _logger = logFactory.Create(GetType(), _logLevel);
+            _diagnosticsLogLevel = diagnosticsLogLevel ?? LogLevel.Information;
         }
 
         public void OnStart()
@@ -40,8 +50,7 @@ namespace AzureWebFarm
             try
             {
                 // Set-up diagnostics
-                if (!AzureRoleEnvironment.IsEmulated())
-                    DiagnosticsHelper.ConfigureDiagnosticMonitor();
+                DiagnosticsHelper.ConfigureDiagnosticMonitor(_diagnosticsLogLevel);
                 _logger.Info("WebRole.OnStart called");
 
                 ServicePointManager.DefaultConnectionLimit = 12;
@@ -88,6 +97,7 @@ namespace AzureWebFarm
                 var iisManager = new IISManager(localSitesPath, localTempPath, syncStatusRepository, _logFactory, _logLevel);
                 _syncService = new SyncService(websiteRepository, syncStatusRepository, storageAccount, localSitesPath, localTempPath, Constants.DirectoriesToExclude, new string[] { }, () => Constants.IsSyncEnabled, iisManager, _logFactory, _logLevel);
                 _backgroundWorker = new BackgroundWorkerService(localSitesPath, localExecutionPath, _logFactory, _logLevel);
+                _webDeployService = new WebDeployService(storageAccount, _logFactory, _logLevel);
 
                 // Subscribe the background worker to relevant events in the sync service
                 _syncService.Ping += (sender, args) => _backgroundWorker.Ping();
@@ -96,6 +106,9 @@ namespace AzureWebFarm
 
                 // Update the sites with initial state
                 _syncService.Start();
+                
+                // Ensure that only one instance at a time handles web deploy connections behind the load balancer
+                _webDeployService.Start();
             }
             catch (Exception e)
             {
@@ -124,8 +137,10 @@ namespace AzureWebFarm
         {
             _logger.Info("WebRole.OnStop called");
 
+            _webDeployService.Stop();
+
             // Set the sites as not synced for this instance
-            _syncService.UpdateAllSitesSyncStatus(AzureRoleEnvironment.CurrentRoleInstanceId(), false);
+            _syncService.SetCurrentInstanceSitesOffline();
 
             // http://blogs.msdn.com/b/windowsazure/archive/2013/01/14/the-right-way-to-handle-azure-onstop-events.aspx
             var pcrc = new PerformanceCounter("ASP.NET", "Requests Current", "");
