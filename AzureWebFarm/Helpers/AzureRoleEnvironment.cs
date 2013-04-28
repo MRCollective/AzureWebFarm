@@ -21,7 +21,7 @@ namespace AzureWebFarm.Helpers
         public static Func<bool> IsComputeEmulatorEnvironment = () => IsAvailable() && DeploymentId().StartsWith("deployment", StringComparison.OrdinalIgnoreCase);
         public static Func<bool> IsEmulated = () => IsAvailable() && RoleEnvironment.IsEmulated;
         public static Action RequestRecycle = () => RoleEnvironment.RequestRecycle();
-        public static Func<string, LocalResource> GetLocalResource = resourceName => RoleEnvironment.GetLocalResource(resourceName);
+        public static Func<string, string> GetLocalResourcePath = resourceName => RoleEnvironment.GetLocalResource(resourceName).RootPath.TrimEnd('\\');
         public static Func<bool> HasWebDeployLease = () => CheckHasWebDeployLease();
 
         public static event EventHandler<RoleEnvironmentChangedEventArgs> Changed;

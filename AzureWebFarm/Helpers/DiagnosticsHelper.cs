@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading;
+using Castle.Core.Logging;
 using Microsoft.WindowsAzure;
 using Microsoft.WindowsAzure.Diagnostics;
 using Microsoft.WindowsAzure.StorageClient;
@@ -75,6 +77,20 @@ namespace AzureWebFarm.Helpers
 
             DiagnosticMonitor.Start(Constants.DiagnosticsConnectionStringKey, config);
             Trace.TraceInformation("Diagnostics configured.");
+        }
+
+        public static void WaitForAllHttpRequestsToEnd(ILogger logger)
+        {
+            // http://blogs.msdn.com/b/windowsazure/archive/2013/01/14/the-right-way-to-handle-azure-onstop-events.aspx
+            var pcrc = new PerformanceCounter("ASP.NET", "Requests Current", "");
+            while (true)
+            {
+                var rc = pcrc.NextValue();
+                logger.InfoFormat("ASP.NET Requests Current = {0}, permitting role exit.", rc);
+                if (rc <= 0)
+                    break;
+                Thread.Sleep(TimeSpan.FromSeconds(1));
+            }
         }
     }
 }

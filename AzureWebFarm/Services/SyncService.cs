@@ -14,7 +14,20 @@ using Microsoft.WindowsAzure.StorageClient;
 
 namespace AzureWebFarm.Services
 {
-    internal class SyncService
+    public delegate void SiteUpdatedEventHandler(object sender, EventArgs e, string siteName);
+    public delegate void PingEventHandler(object sender, EventArgs e);
+
+    public interface ISyncService : IDisposable
+    {
+        void SyncForever(Func<TimeSpan> interval);
+        void SyncOnce();
+
+        event PingEventHandler Ping;
+        event SiteUpdatedEventHandler SiteUpdated;
+        event SiteUpdatedEventHandler SiteDeleted;
+    }
+
+    internal class SyncService : ISyncService
     {
         #region Setup / Constructor
 
@@ -58,19 +71,13 @@ namespace AzureWebFarm.Services
         #endregion
 
         #region Public methods
-        public void SetCurrentInstanceSitesOffline()
+        public void Dispose()
         {
             foreach (var syncStatus in _syncStatusRepository.RetrieveSyncStatusByInstanceId(AzureRoleEnvironment.CurrentRoleInstanceId()))
             {
                 syncStatus.IsOnline = false;
                 _syncStatusRepository.Update(syncStatus);
             }
-        }
-
-        public void Start()
-        {
-            // Always sync once in case the role has been reimaged.
-            SyncOnce();
         }
 
         // ReSharper disable FunctionNeverReturns
@@ -544,7 +551,6 @@ namespace AzureWebFarm.Services
 
         #region Events
 
-        public delegate void PingEventHandler(object sender, EventArgs e);
         public event PingEventHandler Ping;
 
         protected virtual void OnPing()
@@ -561,7 +567,6 @@ namespace AzureWebFarm.Services
             }
         }
 
-        public delegate void SiteUpdatedEventHandler(object sender, EventArgs e, string siteName);
         public event SiteUpdatedEventHandler SiteUpdated;
 
         protected virtual void OnSiteUpdated(string siteName)

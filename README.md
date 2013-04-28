@@ -92,12 +92,12 @@ You must ensure that your console application can handle being run simultaneousl
 
 The easiest way to do this is to use a bit of MSBuild in your web project such as (assumes the `.exe` output is the same name as the project and the console app project sub folder is at the same level as the web project subfolder in your solution, also assumes the web deploy is being generated in the default directory):
 
-      <Target Name="AddBackgroundWorker" BeforeTargets="PackageUsingManifest">
+      <Target Name="AddBackgroundWorker" BeforeTargets="GenerateMsdeployManifestFiles">
         <Message Text="Copying Background Worker files into package temp path so it's copied into web deploy package." />
         <ItemGroup>
           <WorkerFiles Include="$(ProjectDir)..\MyBackgroundWorkerProjectDirectory\bin\$(Configuration)\*.*" />
         </ItemGroup>
-        <Copy SourceFiles="@(WorkerFiles)" DestinationFolder="$(BaseIntermediateOutputPath)\$(Configuration)\Package\PackageTmp\bin\MyBackgroundWorkerProjectDirectory" />
+        <Copy SourceFiles="@(WorkerFiles)" DestinationFolder="$(_PackageTempDir)\bin\MyBackgroundWorkerProjectDirectory" />
       </Target>
 
 In order to be able to run your console application locally you might want to copy the web.config file from your web project to your background worker when it's built. You can easily accomplish this with the following snippet of MSBuild in the project file for your console application:

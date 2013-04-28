@@ -36,6 +36,7 @@
       <dependency id="AzureToolkit" version="2.4.10" />
       <dependency id="Microsoft.WindowsAzure.ConfigurationManager" version="1.8" />
       <dependency id="Castle.Core" version="3.2" />
+      <dependency id="Autofac" version="3.0.2" />
     </dependencies>
     <frameworkAssemblies>
       <frameworkAssembly assemblyName="Microsoft.WindowsAzure.ServiceRuntime" targetFramework="net40" />

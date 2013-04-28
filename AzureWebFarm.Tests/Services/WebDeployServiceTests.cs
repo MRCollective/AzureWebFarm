@@ -46,7 +46,7 @@ namespace AzureWebFarm.Tests.Services
         {
             _service.Start();
             Thread.Sleep(TimeSpan.FromSeconds(4));
-            _service.Stop();
+            _service.Dispose();
             Thread.Sleep(TimeSpan.FromSeconds(2));
             
             var hasWebDeployLease = AzureRoleEnvironment.HasWebDeployLease();
@@ -58,7 +58,7 @@ namespace AzureWebFarm.Tests.Services
         [TearDown]
         public void Teardown()
         {
-            _service.Stop();
+            _service.Dispose();
         }
     }
 }

@@ -6,7 +6,12 @@ using Castle.Core.Logging;
 
 namespace AzureWebFarm.Services
 {
-    public class WebDeployService
+    public interface IWebDeployService : IDisposable
+    {
+        void Start();
+    }
+
+    public class WebDeployService : IWebDeployService
     {
         private readonly ILogger _logger;
         private string _leaseId;
@@ -73,7 +78,7 @@ namespace AzureWebFarm.Services
             }, _cancellationToken.Token);
         }
 
-        public void Stop()
+        public void Dispose()
         {
             if (_cancellationToken != null && !_cancellationToken.IsCancellationRequested)
             {

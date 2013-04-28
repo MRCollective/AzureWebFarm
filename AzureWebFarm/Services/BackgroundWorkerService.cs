@@ -9,12 +9,20 @@ using Castle.Core.Logging;
 
 namespace AzureWebFarm.Services
 {
-    internal class BackgroundWorkerService : IDisposable
+    public interface IBackgroundWorkerService : IDisposable
+    {
+        void Update(string siteName);
+        void DisposeSite(string siteName);
+        void Ping();
+        void Wait(TimeSpan maxWait);
+    }
+
+    internal class BackgroundWorkerService : IBackgroundWorkerService
     {
         private readonly string _executablePath;
         private readonly Dictionary<string, List<Executable>> _executables;
         private readonly ExecutableFinder _executableFinder;
-        private ILogger _logger;
+        private readonly ILogger _logger;
 
         public BackgroundWorkerService(string sitesPath, string executablePath, ILoggerFactory loggerFactory, LoggerLevel logLevel)
         {
