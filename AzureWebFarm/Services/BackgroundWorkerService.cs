@@ -174,16 +174,50 @@ namespace AzureWebFarm.Services
             if (!Directory.Exists(GetExecutionDirPath()))
                 Directory.CreateDirectory(GetExecutionDirPath());
 
-            foreach (var f in Directory.GetFiles(GetOriginalDirPath(), "*.*", SearchOption.AllDirectories))
-            {
-                File.Copy(f, f.Replace(GetOriginalDirPath(), GetExecutionDirPath()));
-            }
+            DirectoryCopy(GetOriginalDirPath(), GetExecutionDirPath(), true);
 
             var webConfigPath = Path.Combine(_basePath, "..", "web.config");
             var targetPath = Path.Combine(GetExecutionDirPath(), "web.config");
             if (File.Exists(webConfigPath) && !File.Exists(targetPath))
             {
                 File.Copy(webConfigPath, targetPath);
+            }
+        }
+
+        // From: http://msdn.microsoft.com/en-us/library/bb762914.aspx
+        private static void DirectoryCopy(string sourceDirName, string destDirName, bool copySubDirs)
+        {
+            var dir = new DirectoryInfo(sourceDirName);
+            var dirs = dir.GetDirectories();
+
+            if (!dir.Exists)
+            {
+                throw new DirectoryNotFoundException(
+                    "Source directory does not exist or could not be found: "
+                    + sourceDirName);
+            }
+
+            // If the destination directory doesn't exist, create it. 
+            if (!Directory.Exists(destDirName))
+            {
+                Directory.CreateDirectory(destDirName);
+            }
+
+            // Get the files in the directory and copy them to the new location.
+            foreach (var file in dir.GetFiles())
+            {
+                var tempPath = Path.Combine(destDirName, file.Name);
+                file.CopyTo(tempPath, false);
+            }
+
+            // If copying subdirectories, copy them and their contents to new location. 
+            if (copySubDirs)
+            {
+                foreach (var subdir in dirs)
+                {
+                    var tempPath = Path.Combine(destDirName, subdir.Name);
+                    DirectoryCopy(subdir.FullName, tempPath, copySubDirs);
+                }
             }
         }
 
