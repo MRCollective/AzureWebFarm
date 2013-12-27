@@ -21,6 +21,13 @@ namespace AzureWebFarm.ControlPanel.Areas.ControlPanel
             base.RegisterArea(context, new NopBus());
 
             context.MapRoute(
+                "ControlPanel_fonts",
+                "ControlPanel/Fonts/{resourceName}",
+                new {controller = "FontAwareEmbeddedResource", action = "Index", resourcePath = ("Content.Fonts")},
+                new[] { "AzureWebFarm.ControlPanel.Areas.ControlPanel.Controllers" }
+            );
+
+            context.MapRoute(
                 "ControlPanel_home",
                 "",
                 new {action = "Index", controller = "Home"},

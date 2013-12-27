@@ -1,6 +1,17 @@
-﻿@using MvcContrib
+﻿@using MvcContrib.UI.Grid
 @model IList<AzureWebFarm.Entities.WebSite>
 
-@foreach (var site in Model) {
-    <p>@site.Name</p>
+@{
+    var grid = Html.Grid(Model)
+        .Attributes(@class => "table")
+        .Columns(c =>
+        {
+            c.For(site => site.Name);
+            c.For(site => site.Description);
+        });
 }
+
+<h1>Dashboard</h1>
+<div class="table-responsive">
+    @grid
+</div>

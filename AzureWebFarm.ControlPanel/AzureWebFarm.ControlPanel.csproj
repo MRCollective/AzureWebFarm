@@ -125,6 +125,7 @@
   <ItemGroup>
     <Compile Include="App_Start\ContainerConfig.cs" />
     <Compile Include="Areas\ControlPanel\Controllers\DashboardController.cs" />
+    <Compile Include="Areas\ControlPanel\Controllers\FontAwareEmbeddedResourceController.cs" />
     <Compile Include="Areas\ControlPanel\Controllers\HomeController.cs" />
     <Compile Include="Areas\ControlPanel\ControlPanelAreaRegistration.cs" />
     <Compile Include="Global.asax.cs">
@@ -134,12 +135,25 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Areas\ControlPanel\Content\Styles\site.css" />
+    <EmbeddedResource Include="Areas\ControlPanel\Content\Styles\bootstrap-theme.css" />
+    <EmbeddedResource Include="Areas\ControlPanel\Content\Styles\bootstrap-theme.min.css" />
+    <EmbeddedResource Include="Areas\ControlPanel\Content\Styles\bootstrap.css" />
+    <EmbeddedResource Include="Areas\ControlPanel\Content\Styles\bootstrap.min.css" />
+    <EmbeddedResource Include="Areas\ControlPanel\Content\Fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Global.asax" />
+    <EmbeddedResource Include="Areas\ControlPanel\Content\Fonts\glyphicons-halflings-regular.woff" />
+    <EmbeddedResource Include="Areas\ControlPanel\Content\Fonts\glyphicons-halflings-regular.ttf" />
+    <EmbeddedResource Include="Areas\ControlPanel\Content\Fonts\glyphicons-halflings-regular.eot" />
+    <EmbeddedResource Include="Areas\ControlPanel\Content\Scripts\jquery-1.9.1.intellisense.js" />
+    <EmbeddedResource Include="Areas\ControlPanel\Content\Scripts\bootstrap.js" />
+    <EmbeddedResource Include="Areas\ControlPanel\Content\Scripts\bootstrap.min.js" />
+    <EmbeddedResource Include="Areas\ControlPanel\Content\Scripts\jquery-1.9.1.js" />
+    <EmbeddedResource Include="Areas\ControlPanel\Content\Scripts\jquery-1.9.1.min.js" />
     <Content Include="Web.config" />
+    <EmbeddedResource Include="Areas\ControlPanel\Content\Scripts\jquery-1.9.1.min.map" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Areas\ControlPanel\Content\Images\" />
-    <Folder Include="Areas\ControlPanel\Content\Scripts\" />
     <Folder Include="Areas\ControlPanel\Models\" />
   </ItemGroup>
   <ItemGroup>
