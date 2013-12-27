@@ -37,6 +37,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestApp3", "TestApp3\TestAp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestApp4", "TestApp4\TestApp4.csproj", "{324AB082-F9B6-4F22-A4A5-533D17BCA088}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureWebFarm.ControlPanel", "AzureWebFarm.ControlPanel\AzureWebFarm.ControlPanel.csproj", "{96893CE7-C980-4184-B3B5-BE55725042D1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -79,6 +81,10 @@ Global
 		{324AB082-F9B6-4F22-A4A5-533D17BCA088}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{324AB082-F9B6-4F22-A4A5-533D17BCA088}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{324AB082-F9B6-4F22-A4A5-533D17BCA088}.Release|Any CPU.Build.0 = Release|Any CPU
+		{96893CE7-C980-4184-B3B5-BE55725042D1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{96893CE7-C980-4184-B3B5-BE55725042D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{96893CE7-C980-4184-B3B5-BE55725042D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{96893CE7-C980-4184-B3B5-BE55725042D1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
