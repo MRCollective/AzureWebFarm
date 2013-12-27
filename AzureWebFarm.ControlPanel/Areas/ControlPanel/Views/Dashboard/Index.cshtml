@@ -1,3 +1,6 @@
-﻿@model dynamic
+﻿@using MvcContrib
+@model IList<AzureWebFarm.Entities.WebSite>
 
-<h1>Title</h1>
+@foreach (var site in Model) {
+    <p>@site.Name</p>
+}
