@@ -1,5 +1,6 @@
 ﻿using System.Web;
 using System.Web.Mvc;
+using AzureWebFarm.ControlPanel.App_Start;
 using MvcContrib.PortableAreas;
 
 namespace AzureWebFarm.ControlPanel
@@ -8,6 +9,7 @@ namespace AzureWebFarm.ControlPanel
     {
         protected void Application_Start()
         {
+            ContainerConfig.BuildContainer();
             AreaRegistration.RegisterAllAreas();
             PortableAreaRegistration.RegisterEmbeddedViewEngine();
         }
