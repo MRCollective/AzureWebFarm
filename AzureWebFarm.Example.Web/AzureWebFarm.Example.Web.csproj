@@ -154,7 +154,6 @@
     </Compile>
     <Content Include="Global.asax" />
     <Content Include="Probe.aspx" />
-    <Content Include="Default.aspx" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>

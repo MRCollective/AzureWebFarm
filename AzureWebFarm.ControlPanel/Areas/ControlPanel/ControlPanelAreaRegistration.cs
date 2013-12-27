@@ -18,13 +18,21 @@ namespace AzureWebFarm.ControlPanel.Areas.ControlPanel
 
         public override void RegisterArea(AreaRegistrationContext context)
         {
+            base.RegisterArea(context, new NopBus());
+
+            context.MapRoute(
+                "ControlPanel_home",
+                "",
+                new {action = "Index", controller = "Home"},
+                new[] { "AzureWebFarm.ControlPanel.Areas.ControlPanel.Controllers" }
+            );
+
             context.MapRoute(
                 "ControlPanel_default",
                 "ControlPanel/{controller}/{action}/{id}",
-                new { controller = "Home", action = "Index", id = UrlParameter.Optional }
+                new { action = "Index", id = UrlParameter.Optional },
+                new[] { "AzureWebFarm.ControlPanel.Areas.ControlPanel.Controllers" }
             );
-
-            base.RegisterArea(context, new NopBus());
         }
     }
 

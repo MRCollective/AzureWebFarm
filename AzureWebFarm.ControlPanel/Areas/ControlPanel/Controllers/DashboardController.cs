@@ -2,11 +2,11 @@
 
 namespace AzureWebFarm.ControlPanel.Areas.ControlPanel.Controllers
 {
-    public class HomeController : Controller
+    public class DashboardController : Controller
     {
         public ActionResult Index()
         {
-            return RedirectToAction("Index", "Dashboard");
+            return View();
         }
     }
 }

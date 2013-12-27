@@ -107,6 +107,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Areas\ControlPanel\Controllers\DashboardController.cs" />
     <Compile Include="Areas\ControlPanel\Controllers\HomeController.cs" />
     <Compile Include="Areas\ControlPanel\ControlPanelAreaRegistration.cs" />
     <Compile Include="Global.asax.cs">
@@ -131,7 +132,7 @@
     <Content Include="Areas\ControlPanel\Views\Web.config" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Areas\ControlPanel\Views\Home\Index.cshtml" />
+    <EmbeddedResource Include="Areas\ControlPanel\Views\Dashboard\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Areas\ControlPanel\Views\_ViewStart.cshtml" />
