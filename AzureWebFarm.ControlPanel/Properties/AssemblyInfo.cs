@@ -1,17 +1,16 @@
 ﻿using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Castle.Core.Internal;
 
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("AzureWebFarm")]
+[assembly: AssemblyTitle("AzureWebFarm.ControlPanel")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("AzureWebFarm")]
-[assembly: AssemblyCopyright("Copyright ©  2012")]
+[assembly: AssemblyProduct("AzureWebFarm.ControlPanel")]
+[assembly: AssemblyCopyright("Copyright ©  2013")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -21,7 +20,7 @@ using Castle.Core.Internal;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("5aebd3bc-86e2-4718-9c61-af09036d8566")]
+[assembly: Guid("7dc8859e-9dc2-4d1d-a484-bc5311fa695a")]
 
 // Version information for an assembly consists of the following four values:
 //
@@ -30,11 +29,7 @@ using Castle.Core.Internal;
 //      Build Number
 //      Revision
 //
-// You can specify all the values or you can default the Build and Revision Numbers 
+// You can specify all the values or you can default the Revision and Build Numbers 
 // by using the '*' as shown below:
-// [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
-[assembly: InternalsVisibleTo("AzureWebFarm.ControlPanel")]
-[assembly: InternalsVisibleTo("AzureWebFarm.Tests")]
-[assembly: InternalsVisibleTo(InternalsVisible.ToDynamicProxyGenAssembly2)]
