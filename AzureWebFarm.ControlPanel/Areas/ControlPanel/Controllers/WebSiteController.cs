@@ -26,7 +26,7 @@ namespace AzureWebFarm.ControlPanel.Areas.ControlPanel.Controllers
             var bindings = _webSiteRepository.RetrieveWebSiteBindings(id).OrderBy(b => b.HostName).ThenBy(b => b.Port).ToList();
             var syncStatuses = _syncStatusRepository.RetrieveSyncStatus(site.Name);
 
-            var model = new WebSiteViewModel {Site = site, Bindings = bindings, SyncStatuses = syncStatuses};
+            var model = new WebSiteDetailViewModel {Site = site, Bindings = bindings, SyncStatuses = syncStatuses};
             return View(model);
         }
 
@@ -73,9 +73,37 @@ namespace AzureWebFarm.ControlPanel.Areas.ControlPanel.Controllers
             
             return RedirectToAction("Detail", new {area = ControlPanelAreaRegistration.Name, site.Id});
         }
+
+        public ActionResult Edit(Guid id)
+        {
+            var website = _webSiteRepository.RetrieveWebSite(id);
+            if (website == null)
+                return HttpNotFound();
+
+            return View(new EditWebSiteViewModel(website));
+        }
+
+        [HttpPost]
+        public ActionResult Edit(EditWebSiteViewModel model)
+        {
+            var website = _webSiteRepository.RetrieveWebSite(model.Id);
+            if (website == null)
+                return HttpNotFound();
+
+            if (!ModelState.IsValid)
+                return View(model);
+
+            website.Name = model.Name;
+            website.Description = model.Description;
+            website.EnableCDNChildApplication = model.EnableCDNChildApplication;
+            website.EnableTestChildApplication = model.EnableTestChildApplication;
+            _webSiteRepository.UpdateWebSite(website);
+
+            return RedirectToAction("Detail", new { area = ControlPanelAreaRegistration.Name, model.Id });
+        }
     }
 
-    public class CreateWebSiteViewModel
+    public class WebSiterViewModel
     {
         [Required]
         [RegularExpression("^\\w+$", ErrorMessage = "Must only contain numbers, letters or underscores.")]
@@ -87,7 +115,25 @@ namespace AzureWebFarm.ControlPanel.Areas.ControlPanel.Controllers
         public bool EnableCDNChildApplication { get; set; }
 
         public bool EnableTestChildApplication { get; set; }
+    }
 
+    public class EditWebSiteViewModel : WebSiterViewModel
+    {
+        public EditWebSiteViewModel() {}
+
+        public EditWebSiteViewModel(WebSite site)
+        {
+            Name = site.Name;
+            Description = site.Description;
+            EnableCDNChildApplication = site.EnableCDNChildApplication;
+            EnableTestChildApplication = site.EnableTestChildApplication;
+        }
+
+        public Guid Id { get; set; }
+    }
+
+    public class CreateWebSiteViewModel : WebSiterViewModel
+    {
         public bool AddStandardBindings { get; set; }
 
         [RequiredIf("AddStandardBindings", true)]
@@ -95,7 +141,7 @@ namespace AzureWebFarm.ControlPanel.Areas.ControlPanel.Controllers
         public string HostName { get; set; }
     }
 
-    public class WebSiteViewModel
+    public class WebSiteDetailViewModel
     {
         public WebSite Site { get; set; }
         public IEnumerable<Binding> Bindings { get; set; }

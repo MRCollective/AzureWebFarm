@@ -1,7 +1,7 @@
 ﻿@using AzureWebFarm.ControlPanel.Areas.ControlPanel.Views
 @using MvcContrib.UI.Grid
 @using AzureWebFarm.ControlPanel.Areas.ControlPanel.Controllers
-@model WebSiteViewModel
+@model WebSiteDetailViewModel
 
 <h1>Website: @Model.Site.Name</h1>
 
@@ -36,3 +36,7 @@
         </div>
     </div>
 </div>
+
+<form action="@Url.Action("Edit", "WebSite", new {Model.Site.Id})" method="get">
+    <button class="btn btn-primary"><span class="glyphicon glyphicon-globe"></span> Edit website</button>
+</form>
