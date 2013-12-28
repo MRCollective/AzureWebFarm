@@ -125,7 +125,7 @@
   <ItemGroup>
     <Compile Include="App_Start\ContainerConfig.cs" />
     <Compile Include="Areas\ControlPanel\Controllers\DashboardController.cs" />
-    <Compile Include="Areas\ControlPanel\Controllers\FontAwareEmbeddedResourceController.cs" />
+    <Compile Include="Areas\ControlPanel\Controllers\EmbeddedResourceController.cs" />
     <Compile Include="Areas\ControlPanel\Controllers\HomeController.cs" />
     <Compile Include="Areas\ControlPanel\ControlPanelAreaRegistration.cs" />
     <Compile Include="Global.asax.cs">
