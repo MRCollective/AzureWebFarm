@@ -1,27 +1,42 @@
 ﻿@using MvcContrib.UI.Grid
-@model AzureWebFarm.ControlPanel.Areas.ControlPanel.Controllers.DashboardViewModel
+@using AzureWebFarm.ControlPanel.Areas.ControlPanel.Controllers
+@model DashboardViewModel
 
 @{
-    var grid = Html.Grid(Model.Items)
+    var grid = Html.Grid(Model.Sites)
         .Attributes(@class => "table")
         .Columns(c =>
         {
-            c.For(site => site.Site.Name);
-            c.For(site => site.Site.Description);
-            for (var i = 0; i < Model.InstanceCount; i++)
+            c.For(site => site.Name);
+            foreach (var i in Model.Instances)
             {
-                var ii = i;
-                c.For(site => Timestamp(site.SyncStatus.ElementAt(ii).SyncTimestamp))
-                    .Named(Model.InstanceNames.ElementAt(ii))
-                    .Attributes(r => new Dictionary<string, object> { { "class", r.Item.SyncStatus.ElementAt(ii).Status } });
+                var name = i.Name;
+                var isOnline = i.IsOnline;
+                c.For(site => OutputSyncStatus(site.SyncStatus[name]))
+                    .Named(name)
+                    .HeaderAttributes(@class => isOnline ? "online" : "offline")
+                    .Attributes(r => new Dictionary<string, object> { { "class", r.Item.SyncStatus[name].SyncStatus }, {"title", r.Item.SyncStatus[name].SyncStatus} });
             }
         });
 }
 
-@helper Timestamp(DateTime timestamp) {
-    <time title = "@timestamp.ToString("o") GMT" datetime="@timestamp.ToString("o")" data-format="h:mm:ssa ZZ">@timestamp.ToString("hh:mm:sstt")</time>
-    <br />
-    <time title = "@timestamp.ToString("o") GMT" datetime="@timestamp.ToString("o")" data-format="D MMM YYYY">@timestamp.ToString("d MMM yyyy")</time>
+@helper OutputSyncStatus(DashboardViewModel.SiteSyncViewModel syncStatus) {
+    if (syncStatus.SyncTime == null)
+    {
+        @syncStatus.SyncStatus
+    }
+    else
+    {
+        var timestamp = syncStatus.SyncTime.Value;
+        <time title = "@timestamp.ToString("o") GMT" datetime="@timestamp.ToString("o")" data-format="h:mm:ssa ZZ">@timestamp.ToString("hh:mm:sstt")</time>
+        <br />
+        <time title = "@timestamp.ToString("o") GMT" datetime="@timestamp.ToString("o")" data-format="D MMM YYYY">@timestamp.ToString("d MMM yyyy")</time>
+    }
+    if (syncStatus.SyncStatus == "Error")
+    {
+        <br />
+        <strong>@syncStatus.SyncError</strong>
+    }
 }
 
 <h1>Dashboard</h1>

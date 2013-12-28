@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Web.Mvc;
 using AzureWebFarm.Entities;
@@ -19,30 +20,65 @@ namespace AzureWebFarm.ControlPanel.Areas.ControlPanel.Controllers
 
         public ActionResult Index()
         {
-            var sites = _webSiteRepository.RetrieveWebSitesWithBindings();
-            var model = new DashboardViewModel
-            {
-                Items = sites.Select(s => new DashboardItemViewModel
-                {
-                    Site = s,
-                    SyncStatus = _syncStatusRepository.RetrieveSyncStatus(s.Name)
-                }).ToList()
-            };
+            var model = new DashboardViewModel(
+                _webSiteRepository.RetrieveWebSites(),
+                _syncStatusRepository.RetrieveSyncStatuses().ToList()
+            );
 
             return View(model);
         }
     }
 
-    public class DashboardItemViewModel
-    {
-        public WebSite Site { get; set; }
-        public IEnumerable<SyncStatus> SyncStatus { get; set; }
-    }
-
     public class DashboardViewModel
     {
-        public int InstanceCount { get { return Items.First().SyncStatus.Count(); } }
-        public IEnumerable<string> InstanceNames { get { return Items.First().SyncStatus.Select(s => s.RoleInstanceId); } }
-        public IEnumerable<DashboardItemViewModel> Items { get; set; }
+        public DashboardViewModel(IEnumerable<WebSite> websites, IList<SyncStatus> syncStatuses)
+        {
+            Instances = syncStatuses.GroupBy(s => s.RoleInstanceId)
+                .Select(s => new InstanceViewModel {Name = s.Key, IsOnline = s.First().IsOnline})
+                .ToList();
+
+            Sites = websites.Select(w => new SiteViewModel
+            {
+                Name = w.Name,
+                SyncStatus = Instances.ToDictionary(
+                    i => i.Name,
+                    i => syncStatuses
+                        .Where(s => s.SiteName.Equals(w.Name, StringComparison.InvariantCultureIgnoreCase)
+                            && s.RoleInstanceId.Equals(i.Name, StringComparison.InvariantCultureIgnoreCase)
+                        )
+                        .Select(s =>
+                            new SiteSyncViewModel
+                            {
+                                SyncError = s.LastError.Message,
+                                SyncStatus = s.Status.ToString(),
+                                SyncTime = s.SyncTimestamp
+                            }
+                        )
+                        .FirstOrDefault() ?? new SiteSyncViewModel{SyncStatus = "Not Deployed"}
+                )
+            });
+        }
+
+        public IEnumerable<InstanceViewModel> Instances { get; set; }
+        public IEnumerable<SiteViewModel> Sites { get; set; }
+
+        public class InstanceViewModel
+        {
+            public string Name { get; set; }
+            public bool IsOnline { get; set; }
+        }
+
+        public class SiteViewModel
+        {
+            public string Name { get; set; }
+            public Dictionary<string, SiteSyncViewModel> SyncStatus { get; set; }
+        }
+
+        public class SiteSyncViewModel
+        {
+            public string SyncStatus { get; set; }
+            public string SyncError { get; set; }
+            public DateTime? SyncTime { get; set; }
+        }
     }
 }

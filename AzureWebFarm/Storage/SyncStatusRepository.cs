@@ -14,6 +14,7 @@ namespace AzureWebFarm.Storage
         IEnumerable<SyncStatus> RetrieveSyncStatus(string webSiteName);
         IEnumerable<SyncStatus> RetrieveSyncStatusByInstanceId(string roleInstanceId);
         void Update(SyncStatus syncStatus);
+        IEnumerable<SyncStatus> RetrieveSyncStatuses();
     }
 
     public class SyncStatusRepository : ISyncStatusRepository
@@ -38,6 +39,15 @@ namespace AzureWebFarm.Storage
         public void Update(SyncStatus syncStatus)
         {
             _table.AddOrUpdate(syncStatus.ToRow());
+        }
+
+        public IEnumerable<SyncStatus> RetrieveSyncStatuses()
+        {
+            return _table.Query
+                .Where(s => s.PartitionKey.Equals(AzureRoleEnvironment.DeploymentId(), StringComparison.OrdinalIgnoreCase))
+                .ToList()
+                .Select(s => s.ToModel())
+                .ToList();
         }
 
         public void UpdateStatus(string webSiteName, SyncInstanceStatus status, Exception lastError = null)
