@@ -26,7 +26,7 @@
       Please see https://github.com/robdmoore/AzureWebFarm/blob/master/BREAKING_CHANGES.md for any breaking changes.
     </releaseNotes>
     <tags>
-      azure, iis, web farm, msdeploy, web deploy, web role
+      azure, iis, web farm, msdeploy, web deploy, webrole
     </tags>
     <language>
       en-US 
@@ -37,6 +37,8 @@
       <dependency id="Microsoft.WindowsAzure.ConfigurationManager" version="1.8" />
       <dependency id="Castle.Core" version="3.2" />
       <dependency id="Autofac" version="3.0.2" />
+      <dependency id="Microsoft.AspNet.Mvc" version="4.0.30506.0" />
+      <dependency id="MvcContrib.Mvc3-ci" version="3.0.100.0" />
     </dependencies>
     <frameworkAssemblies>
       <frameworkAssembly assemblyName="Microsoft.WindowsAzure.ServiceRuntime" targetFramework="net40" />
@@ -47,15 +49,19 @@
     <file src="readme.txt" />
     <file src="AzureWebFarm\bin\Release\AzureWebFarm.dll" target="lib\NET40" />
     <file src="AzureWebFarm\bin\Release\AzureWebFarm.pdb" target="lib\NET40" />
+    <!-- todo: <file src="AzureWebFarm\bin\Release\AzureWebFarm.XML" target="lib\NET40" />-->
+    <file src="AzureWebFarm.ControlPanel\bin\Release\AzureWebFarm.ControlPanel.dll" target="lib\NET40" />
+    <file src="AzureWebFarm.ControlPanel\bin\Release\AzureWebFarm.ControlPanel.pdb" target="lib\NET40" />
     <file src="AzureWebFarm\bin\Release\Microsoft.Web.Administration.dll" target="lib\NET40" />
     <file src="AzureWebFarm\bin\Release\Microsoft.Web.Deployment.dll" target="lib\NET40" />
-    <!-- todo: <file src="AzureWebFarm\bin\Release\AzureWebFarm.XML" target="lib\NET40" />-->
     <file src="AzureWebFarm.Example.Web\app.config" target="content" />
     <file src="AzureWebFarm.Example.Web\web.config" target="content" />
     <file src="AzureWebFarm.Example.Web\Probe.aspx.cs" target="content" />
     <file src="AzureWebFarm.Example.Web\Probe.aspx" target="content" />
-    <file src="AzureWebFarm.Example.Web\Default.aspx" target="content" />
+    <file src="AzureWebFarm.Example.Web\Global.aspx" target="content" />
+    <file src="AzureWebFarm.Example.Web\Global.aspx.cs" target="content" />
     <file src="AzureWebFarm.Example.Web\WebRole.cs" target="content" />
+    <file src="AzureWebFarm.Example.Web\Areas\Web.config" target="content\Areas" />
     <file src="AzureWebFarm.Example.Cloud\ServiceConfiguration.Cloud.cscfg" target="tools\ExampleConfigs" />
     <file src="AzureWebFarm.Example.Cloud\ServiceDefinition.csdef" target="tools\ExampleConfigs" />
     <file src="AzureWebFarm.AdminConsole\bin\Release\*.*" target="tools\AdminConsole" />
