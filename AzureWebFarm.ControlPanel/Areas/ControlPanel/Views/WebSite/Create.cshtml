@@ -1,0 +1,25 @@
+﻿@using AzureWebFarm.ControlPanel.Areas.ControlPanel.Controllers
+@using ChameleonForms.Templates.TwitterBootstrap3
+@model CreateWebSiteViewModel
+
+<h1>Create Website</h1>
+
+@using (var f = Html.BeginChameleonForm())
+{
+    using (var s = f.BeginSection())
+    {
+        @s.FieldFor(m => m.Name)
+        @s.FieldFor(m => m.Description)
+        using (var ff = s.BeginFieldFor(m => m.AddStandardBindings, Field.Configure().WithHint("Add http and https bindings").AsDropDown()))
+        {
+            @ff.FieldFor(m => m.HostName)
+        }
+        @s.FieldFor(m => m.EnableCDNChildApplication)
+        @s.FieldFor(m => m.EnableTestChildApplication)
+    }
+    
+    using (var n = f.BeginNavigation())
+    {
+        @n.Submit("Create").WithStyle(EmphasisStyle.Primary).WithIcon("globe")
+    }
+}

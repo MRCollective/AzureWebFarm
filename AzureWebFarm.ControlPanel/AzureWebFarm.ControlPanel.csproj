@@ -69,6 +69,9 @@
     <Reference Include="Microsoft.WindowsAzure.StorageClient, Version=1.7.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\WindowsAzure.Storage.1.7.0.0\lib\net35-full\Microsoft.WindowsAzure.StorageClient.dll</HintPath>
     </Reference>
+    <Reference Include="MVC Foolproof Validation">
+      <HintPath>..\packages\foolproof.0.9.4517\lib\MVC Foolproof Validation.dll</HintPath>
+    </Reference>
     <Reference Include="MvcContrib">
       <HintPath>..\packages\MvcContrib.Mvc3-ci.3.0.100.0\lib\MvcContrib.dll</HintPath>
     </Reference>
@@ -152,6 +155,7 @@
     <EmbeddedResource Include="Areas\ControlPanel\Content\Styles\bootstrap.min.css" />
     <EmbeddedResource Include="Areas\ControlPanel\Content\Fonts\glyphicons-halflings-regular.svg" />
     <EmbeddedResource Include="Areas\ControlPanel\Content\Styles\chameleonforms-twitterbootstrap.css" />
+    <EmbeddedResource Include="Areas\ControlPanel\Content\Scripts\controlpanel.js" />
     <Content Include="Global.asax" />
     <EmbeddedResource Include="Areas\ControlPanel\Content\Fonts\glyphicons-halflings-regular.woff" />
     <EmbeddedResource Include="Areas\ControlPanel\Content\Fonts\glyphicons-halflings-regular.ttf" />
@@ -172,12 +176,16 @@
     <EmbeddedResource Include="Areas\ControlPanel\Content\Scripts\jquery.validate.min.js" />
     <EmbeddedResource Include="Areas\ControlPanel\Content\Scripts\jquery.validate.unobtrusive.js" />
     <EmbeddedResource Include="Areas\ControlPanel\Content\Scripts\jquery.validate.unobtrusive.min.js" />
+    <EmbeddedResource Include="Areas\ControlPanel\Content\Scripts\mvcfoolproof.unobtrusive.min.js" />
+    <EmbeddedResource Include="Areas\ControlPanel\Content\Scripts\MvcFoolproofJQueryValidation.min.js" />
+    <EmbeddedResource Include="Areas\ControlPanel\Content\Scripts\MvcFoolproofValidation.min.js" />
     <Content Include="Web.config" />
     <EmbeddedResource Include="Areas\ControlPanel\Content\Scripts\jquery-1.9.1.min.map" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Areas\ControlPanel\Content\Images\" />
     <Folder Include="Areas\ControlPanel\Models\" />
+    <Folder Include="scripts\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
@@ -202,6 +210,9 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Areas\ControlPanel\Views\WebSite\Detail.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Areas\ControlPanel\Views\WebSite\Create.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

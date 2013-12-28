@@ -37,9 +37,11 @@
       <dependency id="Microsoft.WindowsAzure.ConfigurationManager" version="1.8" />
       <dependency id="Castle.Core" version="3.2" />
       <dependency id="Autofac" version="3.0.2" />
+      <dependency id="ChameleonForms.TwitterBootstrap3" version="1.0" />
+      <dependency id="foolproof" version="0.9.4517" />
       <dependency id="Microsoft.AspNet.Mvc" version="4.0.30506.0" />
       <dependency id="MvcContrib.Mvc3-ci" version="3.0.100.0" />
-      <dependency id="ChameleonForms" version="1.0" />    </dependencies>
+    </dependencies>
     <frameworkAssemblies>
       <frameworkAssembly assemblyName="Microsoft.WindowsAzure.ServiceRuntime" targetFramework="net40" />
       <frameworkAssembly assemblyName="Microsoft.WindowsAzure.Diagnostics" targetFramework="net40" />

@@ -55,7 +55,7 @@ namespace AzureWebFarm.ControlPanel.Areas.ControlPanel.Controllers
                                 SyncTime = s.SyncTimestamp
                             }
                         )
-                        .FirstOrDefault() ?? new SiteSyncViewModel{SyncStatus = "Not Deployed"}
+                        .FirstOrDefault() ?? new SiteSyncViewModel{SyncStatus = "NotDeployed"}
                 )
             });
         }

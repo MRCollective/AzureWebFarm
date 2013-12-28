@@ -15,6 +15,7 @@ namespace AzureWebFarm.ControlPanel
             ContainerConfig.BuildContainer();
             AreaRegistration.RegisterAllAreas();
             FormTemplate.Default = new TwitterBootstrapFormTemplate();
+            HumanizedLabels.Register();
             ModelBinders.Binders.Add(typeof(DateTime), new DateTimeModelBinder());
             ModelBinders.Binders.Add(typeof(DateTime?), new DateTimeModelBinder());
         }
