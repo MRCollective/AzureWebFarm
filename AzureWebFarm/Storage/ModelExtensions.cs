@@ -108,7 +108,7 @@ namespace AzureWebFarm.Storage
                 Status = (SyncInstanceStatus)Enum.Parse(typeof(SyncInstanceStatus), row.Status),
                 SyncTimestamp = row.Timestamp,
                 IsOnline = row.IsOnline.GetValueOrDefault(true),
-                LastError = new Exception(row.LastError)
+                LastError = !string.IsNullOrEmpty(row.LastError) ? new Exception(row.LastError) : null
             };
         }
     }

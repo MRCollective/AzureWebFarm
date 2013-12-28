@@ -1,4 +1,5 @@
-﻿@using MvcContrib.UI.Grid
+﻿@using AzureWebFarm.ControlPanel.Areas.ControlPanel.Views
+@using MvcContrib.UI.Grid
 @using AzureWebFarm.ControlPanel.Areas.ControlPanel.Controllers
 @model WebSiteViewModel
 
@@ -15,6 +16,22 @@
                 c.For(b => b.Port);
                 c.For(b => b.IpAddress);
                 c.For(b => new HtmlString(!string.IsNullOrEmpty(b.CertificateThumbprint) ? HttpUtility.HtmlEncode(b.CertificateThumbprint) : "<em>None</em>")).Named("Certificate Thumbprint");
+            })
+        </div>
+    </div>
+</div>
+
+<div class="panel panel-primary">
+    <div class="panel-heading">Sync Status</div>
+    <div class="panel-body">
+        <div class="table-responsive">
+            @Html.Grid(Model.SyncStatuses).Attributes(@class => "table").Columns(c =>
+            {
+                c.For(s => s.RoleInstanceId).Named("Instance");
+                c.For(s => s.IsOnline).Attributes(r => new Dictionary<string, object>{{"class", r.Item.IsOnline ? "online" : "offline"}});
+                c.For(s => s.Status).Attributes(r => new Dictionary<string, object>{{"class", r.Item.Status}});
+                c.For(s => ViewHelpers.OutputSyncTime(s.SyncTimestamp)).Named("Last Sync At");
+                c.For(s => new HtmlString(s.LastError != null ? HttpUtility.HtmlEncode(s.LastError.Message) : "<em>None</em>")).Named("Last Error");
             })
         </div>
     </div>

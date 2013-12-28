@@ -50,7 +50,7 @@ namespace AzureWebFarm.ControlPanel.Areas.ControlPanel.Controllers
                         .Select(s =>
                             new SiteSyncViewModel
                             {
-                                SyncError = s.LastError.Message,
+                                SyncError = s.LastError != null ? s.LastError.Message : null,
                                 SyncStatus = s.Status.ToString(),
                                 SyncTime = s.SyncTimestamp
                             }

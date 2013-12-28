@@ -1,4 +1,5 @@
 ﻿@using AzureWebFarm.ControlPanel.Areas.ControlPanel
+@using AzureWebFarm.ControlPanel.Areas.ControlPanel.Views
 @using MvcContrib.UI.Grid
 @using AzureWebFarm.ControlPanel.Areas.ControlPanel.Controllers
 @model DashboardViewModel
@@ -28,10 +29,7 @@
     }
     else
     {
-        var timestamp = syncStatus.SyncTime.Value;
-        <time title = "@timestamp.ToString("o") GMT" datetime="@timestamp.ToString("o")" data-format="h:mm:ssa ZZ">@timestamp.ToString("hh:mm:sstt")</time>
-        <br />
-        <time title = "@timestamp.ToString("o") GMT" datetime="@timestamp.ToString("o")" data-format="D MMM YYYY">@timestamp.ToString("d MMM yyyy")</time>
+        @ViewHelpers.OutputSyncTime(syncStatus.SyncTime.Value)
     }
     if (syncStatus.SyncStatus == "Error")
     {
