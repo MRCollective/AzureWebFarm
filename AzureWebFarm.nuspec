@@ -39,7 +39,7 @@
       <dependency id="Autofac" version="3.0.2" />
       <dependency id="Microsoft.AspNet.Mvc" version="4.0.30506.0" />
       <dependency id="MvcContrib.Mvc3-ci" version="3.0.100.0" />
-    </dependencies>
+      <dependency id="ChameleonForms" version="1.0" />    </dependencies>
     <frameworkAssemblies>
       <frameworkAssembly assemblyName="Microsoft.WindowsAzure.ServiceRuntime" targetFramework="net40" />
       <frameworkAssembly assemblyName="Microsoft.WindowsAzure.Diagnostics" targetFramework="net40" />
