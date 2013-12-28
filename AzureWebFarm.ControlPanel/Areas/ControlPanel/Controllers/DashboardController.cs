@@ -39,6 +39,7 @@ namespace AzureWebFarm.ControlPanel.Areas.ControlPanel.Controllers
 
             Sites = websites.Select(w => new SiteViewModel
             {
+                Id = w.Id,
                 Name = w.Name,
                 SyncStatus = Instances.ToDictionary(
                     i => i.Name,
@@ -70,6 +71,7 @@ namespace AzureWebFarm.ControlPanel.Areas.ControlPanel.Controllers
 
         public class SiteViewModel
         {
+            public Guid Id { get; set; }
             public string Name { get; set; }
             public Dictionary<string, SiteSyncViewModel> SyncStatus { get; set; }
         }

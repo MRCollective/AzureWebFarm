@@ -1,0 +1,21 @@
+﻿@using MvcContrib.UI.Grid
+@using AzureWebFarm.ControlPanel.Areas.ControlPanel.Controllers
+@model WebSiteViewModel
+
+<h1>Website: @Model.Site.Name</h1>
+
+<div class="panel panel-primary">
+    <div class="panel-heading">Bindings</div>
+    <div class="panel-body">
+        <div class="table-responsive">
+            @Html.Grid(Model.Bindings).Attributes(@class => "table").Columns(c =>
+            {
+                c.For(b => b.Protocol + "://").Named("Protocol");
+                c.For(b => new HtmlString("<a href=\""+b.Protocol+"://"+b.HostName+":"+b.Port+"\" target=\"_blank\">"+b.HostName+"</a>")).Named("Host Name");
+                c.For(b => b.Port);
+                c.For(b => b.IpAddress);
+                c.For(b => new HtmlString(!string.IsNullOrEmpty(b.CertificateThumbprint) ? HttpUtility.HtmlEncode(b.CertificateThumbprint) : "<em>None</em>")).Named("Certificate Thumbprint");
+            })
+        </div>
+    </div>
+</div>
