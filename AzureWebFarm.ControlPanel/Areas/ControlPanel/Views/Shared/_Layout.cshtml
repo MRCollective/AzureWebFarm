@@ -7,28 +7,38 @@
     <link rel="stylesheet" type="text/css" href="~/ControlPanel/Styles/site.css" />
     <script type="text/javascript" src="~/ControlPanel/Scripts/jquery-1.9.1.min.js"></script>
     <script type="text/javascript" src="~/ControlPanel/Scripts/bootstrap.min.js"></script>
+    <script type="text/javascript" src="~/ControlPanel/Scripts/moment.min.js"></script>
 </head>
     <body>
         <div class="navbar navbar-default navbar-static-top" role="navigation">
-          <div class="container">
-            <div class="navbar-header">
-              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-              </button>
-              <a class="navbar-brand" href="#">AzureWebFarm</a>
+            <div class="container">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="#">AzureWebFarm</a>
+                </div>
+                <div class="navbar-collapse collapse">
+                    <ul class="nav navbar-nav">
+                        <li class="active"><a href="~/ControlPanel/Dashboard">Dashboard</a></li>
+                    </ul>
+                </div>
             </div>
-            <div class="navbar-collapse collapse">
-              <ul class="nav navbar-nav">
-                <li class="active"><a href="~/ControlPanel">Dashboard</a></li>
-              </ul>
-            </div>
-          </div>
         </div>
         <div class="container">
             @RenderBody()
         </div>
     </body>
+    <script type="text/javascript">
+        $("time").each(function (i, o) {
+            var elem = $(o);
+            var utcString = elem.attr("datetime");
+            var format = elem.data("format");
+            var date = moment(utcString);
+            elem.text(date.local().format(format));
+        });
+    </script>
 </html>

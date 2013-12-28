@@ -149,6 +149,10 @@
     <EmbeddedResource Include="Areas\ControlPanel\Content\Scripts\bootstrap.min.js" />
     <EmbeddedResource Include="Areas\ControlPanel\Content\Scripts\jquery-1.9.1.js" />
     <EmbeddedResource Include="Areas\ControlPanel\Content\Scripts\jquery-1.9.1.min.js" />
+    <EmbeddedResource Include="Areas\ControlPanel\Content\Scripts\moment-with-langs.js" />
+    <EmbeddedResource Include="Areas\ControlPanel\Content\Scripts\moment-with-langs.min.js" />
+    <EmbeddedResource Include="Areas\ControlPanel\Content\Scripts\moment.js" />
+    <EmbeddedResource Include="Areas\ControlPanel\Content\Scripts\moment.min.js" />
     <Content Include="Web.config" />
     <EmbeddedResource Include="Areas\ControlPanel\Content\Scripts\jquery-1.9.1.min.map" />
   </ItemGroup>

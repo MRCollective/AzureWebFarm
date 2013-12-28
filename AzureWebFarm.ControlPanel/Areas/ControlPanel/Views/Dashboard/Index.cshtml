@@ -19,7 +19,9 @@
 }
 
 @helper Timestamp(DateTime timestamp) {
-    @timestamp.ToString("hh:mm:sstt")<br />@timestamp.ToString("d MMM yyyy")
+    <time title = "@timestamp.ToString("o") GMT" datetime="@timestamp.ToString("o")" data-format="h:mm:ssa ZZ">@timestamp.ToString("hh:mm:sstt")</time>
+    <br />
+    <time title = "@timestamp.ToString("o") GMT" datetime="@timestamp.ToString("o")" data-format="D MMM YYYY">@timestamp.ToString("d MMM yyyy")</time>
 }
 
 <h1>Dashboard</h1>
