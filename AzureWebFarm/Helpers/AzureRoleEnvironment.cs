@@ -15,7 +15,7 @@ namespace AzureWebFarm.Helpers
         }
 
         public static Func<bool> IsAvailable = () => RoleEnvironment.IsAvailable;
-        public static Func<string> DeploymentId = () => RoleEnvironment.DeploymentId;
+        public static Func<string> DeploymentId = () => IsAvailable() ? RoleEnvironment.DeploymentId : "NotInAzureEnvironment";
         public static Func<string> CurrentRoleInstanceId = () => IsAvailable() ? RoleEnvironment.CurrentRoleInstance.Id : Environment.MachineName;
         public static Func<string, string> GetConfigurationSettingValue = key => IsAvailable() ? RoleEnvironment.GetConfigurationSettingValue(key) : ConfigurationManager.AppSettings[key];
         public static Func<string> RoleWebsiteName = () => IsAvailable() ? CurrentRoleInstanceId() + "_" + "Web" : "Default Web Site";

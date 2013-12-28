@@ -5,12 +5,14 @@ namespace AzureWebFarm.ControlPanel.Areas.ControlPanel
 {
     public class ControlPanelAreaRegistration : PortableAreaRegistration
     {
+        public static string Name
+        {
+            get { return "ControlPanel"; }
+        }
+
         public override string AreaName
         {
-            get
-            {
-                return "ControlPanel";
-            }
+            get { return Name; }
         }
 
         public override void RegisterArea(AreaRegistrationContext context)

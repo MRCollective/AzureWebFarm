@@ -6,7 +6,7 @@ namespace AzureWebFarm.ControlPanel.Areas.ControlPanel.Controllers
     {
         public ActionResult Index()
         {
-            return RedirectToAction("Index", "Dashboard");
+            return RedirectToAction("Index", "Dashboard", new {area = ControlPanelAreaRegistration.Name});
         }
     }
 }

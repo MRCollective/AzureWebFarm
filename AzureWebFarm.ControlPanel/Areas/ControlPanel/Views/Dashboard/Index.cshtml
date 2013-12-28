@@ -1,14 +1,25 @@
 ﻿@using MvcContrib.UI.Grid
-@model IList<AzureWebFarm.Entities.WebSite>
+@model AzureWebFarm.ControlPanel.Areas.ControlPanel.Controllers.DashboardViewModel
 
 @{
-    var grid = Html.Grid(Model)
+    var grid = Html.Grid(Model.Items)
         .Attributes(@class => "table")
         .Columns(c =>
         {
-            c.For(site => site.Name);
-            c.For(site => site.Description);
+            c.For(site => site.Site.Name);
+            c.For(site => site.Site.Description);
+            for (var i = 0; i < Model.InstanceCount; i++)
+            {
+                var ii = i;
+                c.For(site => Timestamp(site.SyncStatus.ElementAt(ii).SyncTimestamp))
+                    .Named(Model.InstanceNames.ElementAt(ii))
+                    .Attributes(r => new Dictionary<string, object> { { "class", r.Item.SyncStatus.ElementAt(ii).Status } });
+            }
         });
+}
+
+@helper Timestamp(DateTime timestamp) {
+    @timestamp.ToString("hh:mm:sstt")<br />@timestamp.ToString("d MMM yyyy")
 }
 
 <h1>Dashboard</h1>
