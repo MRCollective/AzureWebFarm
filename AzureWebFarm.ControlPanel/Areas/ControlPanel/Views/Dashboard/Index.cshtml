@@ -39,9 +39,16 @@
 }
 
 <h1>Dashboard</h1>
-<div class="table-responsive">
-    @grid
+
+<div class="panel panel-primary">
+    <div class="panel-heading">Farm Status</div>
+    <div class="panel-body">
+        <div class="table-responsive">
+            @grid
+        </div>
+    </div>
 </div>
+
 
 <form action="@Url.Action("Create", "WebSite")" method="get">
     <button class="btn btn-primary"><span class="glyphicon glyphicon-globe"></span> Create new website</button>
