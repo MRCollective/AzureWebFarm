@@ -185,7 +185,6 @@
   <ItemGroup>
     <Folder Include="Areas\ControlPanel\Content\Images\" />
     <Folder Include="Areas\ControlPanel\Models\" />
-    <Folder Include="scripts\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
