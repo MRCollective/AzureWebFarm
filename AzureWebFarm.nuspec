@@ -60,8 +60,8 @@
     <file src="AzureWebFarm.Example.Web\web.config" target="content" />
     <file src="AzureWebFarm.Example.Web\Probe.aspx.cs" target="content" />
     <file src="AzureWebFarm.Example.Web\Probe.aspx" target="content" />
-    <file src="AzureWebFarm.Example.Web\Global.aspx" target="content" />
-    <file src="AzureWebFarm.Example.Web\Global.aspx.cs" target="content" />
+    <file src="AzureWebFarm.Example.Web\Global.asax" target="content" />
+    <file src="AzureWebFarm.Example.Web\Global.asax.cs" target="content" />
     <file src="AzureWebFarm.Example.Web\WebRole.cs" target="content" />
     <file src="AzureWebFarm.Example.Web\Areas\Web.config" target="content\Areas" />
     <file src="AzureWebFarm.Example.Cloud\ServiceConfiguration.Cloud.cscfg" target="tools\ExampleConfigs" />
