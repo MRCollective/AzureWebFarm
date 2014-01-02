@@ -4,45 +4,48 @@
     <meta name="viewport" content="width=device-width" />
     <title>AzureWebFarm</title>
     <link rel="stylesheet" type="text/css" href="~/ControlPanel/Styles/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="~/ControlPanel/Styles/chameleonforms-twitterbootstrap.css" />
     <link rel="stylesheet" type="text/css" href="~/ControlPanel/Styles/site.css" />
     <script type="text/javascript" src="~/ControlPanel/Scripts/jquery-1.9.1.min.js"></script>
     <script type="text/javascript" src="~/ControlPanel/Scripts/bootstrap.min.js"></script>
+    <script type="text/javascript" src="~/ControlPanel/Scripts/moment.min.js"></script>
+    <script type="text/javascript" src="~/ControlPanel/Scripts/jquery.validate.min.js"></script>
+    <script type="text/javascript" src="~/ControlPanel/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script type="text/javascript" src="~/ControlPanel/Scripts/jquery.validate.unobtrusive.chameleon.js"></script>
+    <script type="text/javascript" src="~/ControlPanel/Scripts/jquery.validate.unobtrusive.twitterbootstrap.js"></script>
+    <script type="text/javascript" src="~/ControlPanel/Scripts/mvcfoolproof.unobtrusive.min.js"></script>
+    <script type="text/javascript" src="~/ControlPanel/Scripts/controlpanel.js"></script>
 </head>
     <body>
         <div class="navbar navbar-default navbar-static-top" role="navigation">
-          <div class="container">
-            <div class="navbar-header">
-              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-              </button>
-              <a class="navbar-brand" href="#">AzureWebFarm</a>
+            <div class="container">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="~/">AzureWebFarm</a>
+                </div>
+                <div class="navbar-collapse collapse">
+                    <ul class="nav navbar-nav">
+                        <li class="active"><a href="~/ControlPanel/Dashboard">Dashboard</a></li>
+                    </ul>
+                </div>
             </div>
-            <div class="navbar-collapse collapse">
-              <ul class="nav navbar-nav">
-                <li class="active"><a href="#">Home</a></li>
-                <li><a href="#about">About</a></li>
-                <li><a href="#contact">Contact</a></li>
-                <li class="dropdown">
-                  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Dropdown <b class="caret"></b></a>
-                  <ul class="dropdown-menu">
-                    <li><a href="#">Action</a></li>
-                    <li><a href="#">Another action</a></li>
-                    <li><a href="#">Something else here</a></li>
-                    <li class="divider"></li>
-                    <li class="dropdown-header">Nav header</li>
-                    <li><a href="#">Separated link</a></li>
-                    <li><a href="#">One more separated link</a></li>
-                  </ul>
-                </li>
-              </ul>
-            </div>
-          </div>
         </div>
         <div class="container">
             @RenderBody()
         </div>
     </body>
+    <script type="text/javascript">
+        $("time").each(function (i, o) {
+            var elem = $(o);
+            var utcString = elem.attr("datetime");
+            var format = elem.data("format");
+            var date = moment(utcString);
+            elem.text(date.local().format(format));
+        });
+    </script>
 </html>

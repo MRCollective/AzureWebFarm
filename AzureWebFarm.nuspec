@@ -37,6 +37,8 @@
       <dependency id="Microsoft.WindowsAzure.ConfigurationManager" version="1.8" />
       <dependency id="Castle.Core" version="3.2" />
       <dependency id="Autofac" version="3.0.2" />
+      <dependency id="ChameleonForms.TwitterBootstrap3" version="1.0" />
+      <dependency id="foolproof" version="0.9.4517" />
       <dependency id="Microsoft.AspNet.Mvc" version="4.0.30506.0" />
       <dependency id="MvcContrib.Mvc3-ci" version="3.0.100.0" />
     </dependencies>
@@ -58,8 +60,8 @@
     <file src="AzureWebFarm.Example.Web\web.config" target="content" />
     <file src="AzureWebFarm.Example.Web\Probe.aspx.cs" target="content" />
     <file src="AzureWebFarm.Example.Web\Probe.aspx" target="content" />
-    <file src="AzureWebFarm.Example.Web\Global.aspx" target="content" />
-    <file src="AzureWebFarm.Example.Web\Global.aspx.cs" target="content" />
+    <file src="AzureWebFarm.Example.Web\Global.asax" target="content" />
+    <file src="AzureWebFarm.Example.Web\Global.asax.cs" target="content" />
     <file src="AzureWebFarm.Example.Web\WebRole.cs" target="content" />
     <file src="AzureWebFarm.Example.Web\Areas\Web.config" target="content\Areas" />
     <file src="AzureWebFarm.Example.Cloud\ServiceConfiguration.Cloud.cscfg" target="tools\ExampleConfigs" />

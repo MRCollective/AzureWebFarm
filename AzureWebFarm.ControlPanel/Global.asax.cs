@@ -1,7 +1,10 @@
-﻿using System.Web;
+﻿using System;
+using System.Web;
 using System.Web.Mvc;
 using AzureWebFarm.ControlPanel.App_Start;
-using MvcContrib.PortableAreas;
+using ChameleonForms;
+using ChameleonForms.ModelBinders;
+using ChameleonForms.Templates.TwitterBootstrap3;
 
 namespace AzureWebFarm.ControlPanel
 {
@@ -11,7 +14,10 @@ namespace AzureWebFarm.ControlPanel
         {
             ContainerConfig.BuildContainer();
             AreaRegistration.RegisterAllAreas();
-            PortableAreaRegistration.RegisterEmbeddedViewEngine();
+            FormTemplate.Default = new TwitterBootstrapFormTemplate();
+            HumanizedLabels.Register();
+            ModelBinders.Binders.Add(typeof(DateTime), new DateTimeModelBinder());
+            ModelBinders.Binders.Add(typeof(DateTime?), new DateTimeModelBinder());
         }
     }
 }

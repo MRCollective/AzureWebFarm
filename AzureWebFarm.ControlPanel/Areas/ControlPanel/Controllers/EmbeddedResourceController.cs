@@ -4,15 +4,15 @@ using MvcContrib.PortableAreas;
 
 namespace AzureWebFarm.ControlPanel.Areas.ControlPanel.Controllers
 {
-    public class FontAwareEmbeddedResourceController : Controller
+    public class EmbeddedResourceController : Controller
     {
         private static readonly Dictionary<string, string> MimeTypes = InitializeMimeTypes();
 
-        public ActionResult Index(string resourceName, string resourcePath)
+        public ActionResult Index(string resourceName, string resourceType)
         {
-            if (!string.IsNullOrEmpty(resourcePath))
+            if (!string.IsNullOrEmpty(resourceType))
             {
-                resourceName = resourcePath + "." + resourceName;
+                resourceName = "Content" + "." + resourceType + "." + resourceName;
             }
 
             var areaName = (string) RouteData.DataTokens["area"];

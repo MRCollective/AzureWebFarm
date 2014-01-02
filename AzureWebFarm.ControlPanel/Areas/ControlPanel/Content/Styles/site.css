@@ -5,3 +5,27 @@
 .navbar-static-top {
   margin-bottom: 19px;
 }
+
+.online, .Deployed {
+    color: #fff;
+    background-color: #47a447;
+    border-color: #398439;
+}
+
+.offline, .Error {
+    color: #fff;
+    background-color: #d2322d;
+    border-color: #ac2925;
+}
+
+.NotCreated {
+    color: #fff;
+    background-color: #39b3d7;
+    border-color: #269abc;
+}
+
+.Created {
+    color: #fff;
+    background-color: #428bca;
+    border-color: #357ebd;
+}

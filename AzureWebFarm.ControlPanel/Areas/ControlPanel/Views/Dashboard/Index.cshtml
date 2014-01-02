@@ -1,17 +1,55 @@
-﻿@using MvcContrib.UI.Grid
-@model IList<AzureWebFarm.Entities.WebSite>
+﻿@using AzureWebFarm.ControlPanel.Areas.ControlPanel
+@using AzureWebFarm.ControlPanel.Areas.ControlPanel.Views
+@using MvcContrib.UI.Grid
+@using AzureWebFarm.ControlPanel.Areas.ControlPanel.Controllers
+@model DashboardViewModel
 
 @{
-    var grid = Html.Grid(Model)
+    var grid = Html.Grid(Model.Sites)
         .Attributes(@class => "table")
         .Columns(c =>
         {
-            c.For(site => site.Name);
-            c.For(site => site.Description);
+            c.For(site => Html.ActionLink(site.Name, "Detail", "WebSite", new {area = ControlPanelAreaRegistration.Name, id = site.Id}, null)).Named("Website");
+            foreach (var i in Model.Instances)
+            {
+                var name = i.Name;
+                var isOnline = i.IsOnline;
+                c.For(site => OutputSyncStatus(site.SyncStatus[name]))
+                    .Named(name)
+                    .HeaderAttributes(@class => isOnline ? "online" : "offline")
+                    .Attributes(r => new Dictionary<string, object> { { "class", r.Item.SyncStatus[name].SyncStatus }, {"title", r.Item.SyncStatus[name].SyncStatus} });
+            }
         });
 }
 
+@helper OutputSyncStatus(DashboardViewModel.SiteSyncViewModel syncStatus) {
+    if (syncStatus.SyncTime == null)
+    {
+        @syncStatus.SyncStatus
+    }
+    else
+    {
+        @ViewHelpers.OutputSyncTime(syncStatus.SyncTime.Value)
+    }
+    if (syncStatus.SyncStatus == "Error")
+    {
+        <br />
+        <strong>@syncStatus.SyncError</strong>
+    }
+}
+
 <h1>Dashboard</h1>
-<div class="table-responsive">
-    @grid
+
+<div class="panel panel-primary">
+    <div class="panel-heading">Farm Status</div>
+    <div class="panel-body">
+        <div class="table-responsive">
+            @grid
+        </div>
+    </div>
 </div>
+
+
+<form action="@Url.Action("Create", "WebSite")" method="get">
+    <button class="btn btn-primary"><span class="glyphicon glyphicon-globe"></span> Create new website</button>
+</form>
