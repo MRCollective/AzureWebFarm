@@ -2,6 +2,7 @@
 using System.Configuration;
 using System.IO;
 using System.Net;
+using Microsoft.WindowsAzure;
 using Microsoft.WindowsAzure.ServiceRuntime;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
@@ -13,7 +14,7 @@ namespace AzureWebFarm.Helpers
         public static Func<bool> IsAvailable = () => RoleEnvironment.IsAvailable;
         public static Func<string> DeploymentId = () => IsAvailable() ? RoleEnvironment.DeploymentId : "NotInAzureEnvironment";
         public static Func<string> CurrentRoleInstanceId = () => IsAvailable() ? RoleEnvironment.CurrentRoleInstance.Id : Environment.MachineName;
-        public static Func<string, string> GetConfigurationSettingValue = key => IsAvailable() ? RoleEnvironment.GetConfigurationSettingValue(key) : ConfigurationManager.AppSettings[key];
+        public static Func<string, string> GetConfigurationSettingValue = key => CloudConfigurationManager.GetSetting(key);
         public static Func<string> RoleWebsiteName = () => IsAvailable() ? CurrentRoleInstanceId() + "_" + "Web" : "Default Web Site";
         public static Func<bool> IsComputeEmulatorEnvironment = () => IsAvailable() && DeploymentId().StartsWith("deployment", StringComparison.OrdinalIgnoreCase);
         public static Func<bool> IsEmulated = () => IsAvailable() && RoleEnvironment.IsEmulated;
