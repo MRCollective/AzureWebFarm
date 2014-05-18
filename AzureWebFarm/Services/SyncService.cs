@@ -221,7 +221,10 @@ namespace AzureWebFarm.Services
                     if (entry.IsDirectory)
                     {
                         newBlob.Metadata["IsDirectory"] = bool.TrueString;
-                        newBlob.UploadFromByteArray(new byte[0], 0, 0);
+                        using (var ms = new MemoryStream())
+                        {
+                            newBlob.UploadFromStream(ms);
+                        }
                     }
                     else
                     {

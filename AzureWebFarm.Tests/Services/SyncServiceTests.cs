@@ -145,7 +145,10 @@ namespace AzureWebFarm.Tests.Services
             var container = GetBlobContainer();
             var blob = container.GetBlockBlobReference(name);
             blob.Metadata["IsDirectory"] = bool.TrueString;
-            blob.UploadFromByteArray(new byte[0], 0, 0);
+            using (var ms = new MemoryStream())
+            {
+                blob.UploadFromStream(ms);
+            }
             container.GetBlockBlobReference(string.Format("{0}/{0}.zip", name)).UploadFromFile(zipFilePath, FileMode.Open);
         }
 
