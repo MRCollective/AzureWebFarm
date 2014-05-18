@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2013
+VisualStudioVersion = 12.0.30324.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureWebFarm.Example.Web", "AzureWebFarm.Example.Web\AzureWebFarm.Example.Web.csproj", "{AB0C275A-7C67-4D5A-BFC8-52B490FF6516}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureWebFarm.Tests", "AzureWebFarm.Tests\AzureWebFarm.Tests.csproj", "{4DBDC360-2DD4-41DB-93D0-D1E9F4A133A5}"
@@ -11,7 +13,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureWebFarm", "AzureWebFar
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D567CDC1-E745-4E0F-A33C-A25A94EFB199}"
 	ProjectSection(SolutionItems) = preProject
-		AzureWebFarm.nuspec = AzureWebFarm.nuspec
+		AzureWebFarm\AzureWebFarm.nuspec = AzureWebFarm\AzureWebFarm.nuspec
 		BREAKING_CHANGES.md = BREAKING_CHANGES.md
 		LICENSE.txt = LICENSE.txt
 		README.md = README.md
