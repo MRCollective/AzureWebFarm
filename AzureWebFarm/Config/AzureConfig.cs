@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Configuration;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Security.AccessControl;
 using System.Security.Principal;
 using AzureWebFarm.Helpers;
 using Microsoft.WindowsAzure;
+using Microsoft.WindowsAzure.ServiceRuntime;
 using Microsoft.WindowsAzure.Storage;
 
 namespace AzureWebFarm.Config
@@ -21,6 +23,18 @@ namespace AzureWebFarm.Config
             // Allow multiple simultaneous HTTP request threads
             ServicePointManager.DefaultConnectionLimit = 12;
             
+            AzureRoleEnvironment.Changed += (sender, arg) =>
+            {
+                // Restart the instance on any configuration change given we need to reinitialise our services
+
+                // https://alexandrebrisebois.wordpress.com/2013/09/29/handling-cloud-service-role-configuration-changes-in-windows-azure/
+                // http://msdn.microsoft.com/en-us/library/microsoft.windowsazure.serviceruntime.roleenvironment.changing.aspx
+                if ((arg.Changes.Any(change => change is RoleEnvironmentConfigurationSettingChange)))
+                {
+                    arg.Cancel = true;
+                }
+            };
+
             // Configure local resources
             var localTempPath = GetLocalResourcePathAndSetAccess(TempLocalResource);
             GetLocalResourcePathAndSetAccess(SitesLocalResource);

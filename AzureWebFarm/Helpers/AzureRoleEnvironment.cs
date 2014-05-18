@@ -20,7 +20,21 @@ namespace AzureWebFarm.Helpers
         public static Action RequestRecycle = () => RoleEnvironment.RequestRecycle();
         public static Func<string, string> GetLocalResourcePath = resourceName => RoleEnvironment.GetLocalResource(resourceName).RootPath.TrimEnd('\\');
         public static Func<bool> HasWebDeployLease = () => CheckHasWebDeployLease();
-        
+
+        static AzureRoleEnvironment()
+        {
+            RoleEnvironment.Changing += OnChanging;
+        }
+
+        public static event EventHandler<RoleEnvironmentChangingEventArgs> Changed;
+
+        public static void OnChanging(object caller, RoleEnvironmentChangingEventArgs args)
+        {
+            var handler = Changed;
+            if (handler != null)
+                handler(caller, args);
+        }
+
         public static CloudBlockBlob WebDeployLeaseBlob()
         {
             var blob = CachedWebDeployLeaseBlob ?? GetWebDeployLeaseBlob();
