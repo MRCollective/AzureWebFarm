@@ -4,7 +4,7 @@ namespace AzureWebFarm.Entities
 {
     public class SyncStatus
     {
-        public DateTime SyncTimestamp { get; set; }
+        public DateTimeOffset SyncTimestamp { get; set; }
 
         public string DeploymentId { get; set; }
 

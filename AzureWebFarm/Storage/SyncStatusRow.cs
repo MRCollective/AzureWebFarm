@@ -1,8 +1,9 @@
-﻿using Microsoft.WindowsAzure.StorageClient;
+﻿using Microsoft.WindowsAzure.Storage.Table;
+using Microsoft.WindowsAzure.Storage.Table.DataServices;
 
 namespace AzureWebFarm.Storage
 {
-    public class SyncStatusRow : TableServiceEntity
+    public class SyncStatusRow : TableEntity
     {
         public SyncStatusRow()
         {

@@ -1,6 +1,7 @@
 ﻿using Autofac;
 using Castle.Core.Logging;
 using Microsoft.WindowsAzure;
+using Microsoft.WindowsAzure.Storage;
 
 namespace AzureWebFarm.Config
 {

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Threading;
-using AzureToolkit;
+using WindowsAzure.Storage.Services;
 using AzureWebFarm.Entities;
 using AzureWebFarm.Helpers;
 using AzureWebFarm.Services;
@@ -12,8 +12,9 @@ using AzureWebFarm.Storage;
 using AzureWebFarm.Tests.Services.Base;
 using Castle.Core.Logging;
 using Microsoft.Web.Administration;
-using Microsoft.WindowsAzure;
-using Microsoft.WindowsAzure.StorageClient;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Blob;
+using Microsoft.WindowsAzure.Storage.Table;
 using NUnit.Framework;
 using Binding = AzureWebFarm.Entities.Binding;
 
@@ -32,8 +33,8 @@ namespace AzureWebFarm.Tests.Services
         private string _configPath;
         private string _resourcesPath;
         private WebSiteRepository _repo;
-        private IAzureTable<WebSiteRow> _webSiteTable;
-        private IAzureTable<BindingRow> _bindingTable;
+        private CloudTable _webSiteTable;
+        private CloudTable _bindingTable;
         private List<string> _excludedSites;
         
         [TestFixtureSetUp]
@@ -58,8 +59,8 @@ namespace AzureWebFarm.Tests.Services
             // Website Repository
             var factory = new AzureStorageFactory(CloudStorageAccount.DevelopmentStorageAccount);
             _repo = new WebSiteRepository(factory);
-            _webSiteTable = factory.GetTable<WebSiteRow>(typeof(WebSiteRow).Name);
-            _bindingTable = factory.GetTable<BindingRow>(typeof(BindingRow).Name);
+            _webSiteTable = factory.GetTable(typeof(WebSiteRow).Name);
+            _bindingTable = factory.GetTable(typeof(BindingRow).Name);
 
             // Clean up IIS and table storage to prepare for test
             using (var serverManager = new ServerManager())
@@ -91,7 +92,7 @@ namespace AzureWebFarm.Tests.Services
         private CloudBlobContainer GetBlobContainer()
         {
             var container = CloudStorageAccount.DevelopmentStorageAccount.CreateCloudBlobClient().GetContainerReference(GetConfigValue("SitesContainerName"));
-            container.CreateIfNotExist();
+            container.CreateIfNotExists();
             return container;
         }
 
@@ -123,8 +124,15 @@ namespace AzureWebFarm.Tests.Services
             serverManager.Sites.Where(s => !_excludedSites.Contains(s.Name)).ToList().ForEach(s => serverManager.Sites.Remove(s));
             serverManager.CommitChanges();
             // Clean table storage
-            _webSiteTable.Delete(_webSiteTable.Query.ToList());
-            _bindingTable.Delete(_bindingTable.Query.ToList());
+
+            var webSiteRows = _webSiteTable.CreateQuery<WebSiteRow>().ToList();
+            var bindingRows = _bindingTable.CreateQuery<BindingRow>().ToList();
+
+            foreach (var webSite in webSiteRows)
+                _webSiteTable.Execute(TableOperation.Delete(webSite));
+            foreach (var bindingRow in bindingRows)
+                _bindingTable.Execute(TableOperation.Delete(bindingRow));
+            
             // Clear site and temp directories
             Directory.Delete(_sitePath, true);
             Directory.CreateDirectory(_sitePath);
@@ -135,10 +143,13 @@ namespace AzureWebFarm.Tests.Services
         private void UploadZipToBlob(string name, string zipFilePath)
         {
             var container = GetBlobContainer();
-            var blob = container.GetBlobReference(name);
+            var blob = container.GetBlockBlobReference(name);
             blob.Metadata["IsDirectory"] = bool.TrueString;
-            blob.UploadByteArray(new byte[0]);
-            container.GetBlobReference(string.Format("{0}/{0}.zip", name)).UploadFile(zipFilePath);
+            using (var ms = new MemoryStream())
+            {
+                blob.UploadFromStream(ms);
+            }
+            container.GetBlockBlobReference(string.Format("{0}/{0}.zip", name)).UploadFromFile(zipFilePath, FileMode.Open);
         }
 
         #endregion
@@ -362,7 +373,7 @@ namespace AzureWebFarm.Tests.Services
                 var sourceFilePath = Path.Combine(_tempPath, website, string.Format("{0}.zip", website));
                 File.WriteAllBytes(sourceFilePath, sourceFileContents);
                 var container = GetBlobContainer();
-                var blob = container.GetBlobReference(string.Format("{0}/{0}.zip", website));
+                var blob = container.GetBlockBlobReference(string.Format("{0}/{0}.zip", website));
 
                 try
                 {
@@ -371,7 +382,7 @@ namespace AzureWebFarm.Tests.Services
                     if (localIsLatest)
                     {
                         // Overwrite the blob to check that it doesn't get overridden when local hasn't changed
-                        blob.UploadByteArray(sourceFileContents2);
+                        blob.UploadFromByteArray(sourceFileContents2, 0, sourceFileContents2.Length);
                         _syncService.SyncLocalToBlob();
                     }
 
