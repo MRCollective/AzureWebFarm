@@ -5,7 +5,8 @@ using AzureWebFarm.Helpers;
 using AzureWebFarm.Services;
 using Castle.Core.Logging;
 using Microsoft.WindowsAzure;
-using Microsoft.WindowsAzure.Diagnostics;
+using Microsoft.WindowsAzure.Storage;
+using LogLevel = Microsoft.WindowsAzure.Diagnostics.LogLevel;
 
 namespace AzureWebFarm
 {
@@ -37,7 +38,7 @@ namespace AzureWebFarm
             _logger.Info("WebRole.OnStart called");
             AzureConfig.ConfigureRole();
 
-            var storageAccount = CloudStorageAccount.FromConfigurationSetting(Constants.StorageConnectionStringKey);
+            var storageAccount = CloudStorageAccount.Parse(CloudConfigurationManager.GetSetting(Constants.StorageConnectionStringKey));
             Container = AutofacConfig.BuildContainer(storageAccount, _logFactory, _logLevel);
         }
 

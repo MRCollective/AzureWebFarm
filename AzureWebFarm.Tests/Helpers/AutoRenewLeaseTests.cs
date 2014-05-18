@@ -1,9 +1,10 @@
 ﻿using System;
+using System.Configuration;
 using System.Threading;
 using AzureWebFarm.Helpers;
 using Castle.Core.Logging;
-using Microsoft.WindowsAzure;
-using Microsoft.WindowsAzure.StorageClient;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Blob;
 using NUnit.Framework;
 
 namespace AzureWebFarm.Tests.Helpers
@@ -18,7 +19,7 @@ namespace AzureWebFarm.Tests.Helpers
         {
             var storageAccount = CloudStorageAccount.DevelopmentStorageAccount;
             var container = storageAccount.CreateCloudBlobClient().GetContainerReference("webdeploylease");
-            container.CreateIfNotExist();
+            container.CreateIfNotExists();
 
             _blob = container.GetBlockBlobReference(Constants.WebDeployBlobName);
         }
@@ -28,7 +29,7 @@ namespace AzureWebFarm.Tests.Helpers
         {
             using (new AutoRenewLease(new ConsoleFactory(), LoggerLevel.Debug, _blob))
             {
-                Assert.Throws<StorageClientException>(_blob.SetMetadata);
+                Assert.Throws<StorageException>(() => _blob.SetMetadata());
             }
         }
 
@@ -37,17 +38,17 @@ namespace AzureWebFarm.Tests.Helpers
         {
             using (var lease = new AutoRenewLease(new ConsoleFactory(), LoggerLevel.Debug, _blob))
             {
-                _blob.SetMetadata(lease.LeaseId);
+                _blob.SetMetadata(AccessCondition.GenerateLeaseCondition(lease.LeaseId));
             }
         }
 
         [Test]
         public void Renew_lease_past_initial_lease_length()
         {
-            using (new AutoRenewLease(new ConsoleFactory(), LoggerLevel.Debug, _blob, renewLeaseSeconds: 1, leaseLengthSeconds: 2))
+            using (new AutoRenewLease(new ConsoleFactory(), LoggerLevel.Debug, _blob, renewLeaseSeconds: 15, leaseLengthSeconds: 20))
             {
-                Thread.Sleep(TimeSpan.FromSeconds(4));
-                Assert.Throws<StorageClientException>(_blob.SetMetadata);
+                Thread.Sleep(TimeSpan.FromSeconds(25));
+                Assert.Throws<StorageException>(() => _blob.SetMetadata());
             }
         }
 

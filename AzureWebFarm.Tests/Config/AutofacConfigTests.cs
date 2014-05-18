@@ -4,6 +4,7 @@ using AzureWebFarm.Helpers;
 using AzureWebFarm.Services;
 using Castle.Core.Logging;
 using Microsoft.WindowsAzure;
+using Microsoft.WindowsAzure.Storage;
 using NUnit.Framework;
 
 namespace AzureWebFarm.Tests.Config

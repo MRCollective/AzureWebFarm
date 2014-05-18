@@ -1,9 +1,10 @@
 ﻿using System;
-using Microsoft.WindowsAzure.StorageClient;
+using Microsoft.WindowsAzure.Storage.Table;
+using Microsoft.WindowsAzure.Storage.Table.DataServices;
 
 namespace AzureWebFarm.Storage
 {
-    public class WebSiteRow : TableServiceEntity
+    public class WebSiteRow : TableEntity
     {
         public WebSiteRow()
             : this(Guid.NewGuid())

@@ -1,5 +1,4 @@
 ﻿using System;
-using AzureToolkit;
 using AzureWebFarm.Entities;
 using AzureWebFarm.Helpers;
 
@@ -89,7 +88,7 @@ namespace AzureWebFarm.Storage
             {
                 Status = model.Status.ToString(),
                 IsOnline = model.IsOnline,
-                LastError = model.LastError.TraceInformation()
+                LastError = model.LastError != null ? model.LastError.ToString() : null
             };
         }
 

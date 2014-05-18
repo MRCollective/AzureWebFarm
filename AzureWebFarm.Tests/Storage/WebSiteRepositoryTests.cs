@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using AzureToolkit;
+using System.Web.Caching;
+using WindowsAzure.Storage.Services;
 using AzureWebFarm.Entities;
 using AzureWebFarm.Storage;
-using Microsoft.WindowsAzure;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Table;
 using NUnit.Framework;
 
 namespace AzureWebFarm.Tests.Storage
@@ -20,27 +22,27 @@ namespace AzureWebFarm.Tests.Storage
         {
             var factory = new AzureStorageFactory(CloudStorageAccount.DevelopmentStorageAccount);
             _repository = new WebSiteRepository(factory);
-            _webSiteTable = factory.GetTable<WebSiteRow>(typeof(WebSiteRow).Name);
-            _bindingTable = factory.GetTable<BindingRow>(typeof(BindingRow).Name);
+            _webSiteTable = factory.GetTable(typeof(WebSiteRow).Name);
+            _bindingTable = factory.GetTable(typeof(BindingRow).Name);
         }
 
         #endregion
 
         private WebSiteRepository _repository;
-        private IAzureTable<WebSiteRow> _webSiteTable;
-        private IAzureTable<BindingRow> _bindingTable;
+        private CloudTable _webSiteTable;
+        private CloudTable _bindingTable;
 
-        private static IList<WebSiteRow> CreateAndSaveWebSiteRows(IAzureTable<WebSiteRow> table, int count)
+        private static IList<WebSiteRow> CreateAndSaveWebSiteRows(CloudTable websiteRowTable, int count)
         {
             var sites = new List<WebSiteRow>();
 
             for (var k = 0; k < count; k++)
             {
-                sites.Add(CreateWebSiteRow());
+                var webSiteRow = CreateWebSiteRow();
+                sites.Add(webSiteRow);
+                websiteRowTable.Execute(TableOperation.Insert(webSiteRow));
             }
-
-            table.Add(sites);
-
+            
             return sites;
         }
 
@@ -110,17 +112,17 @@ namespace AzureWebFarm.Tests.Storage
                 var id = site.Id.ToString();
                 var idb = binding.Id.ToString();
 
-                newsite = _webSiteTable.Query.Where(t => t.RowKey == id).FirstOrDefault();
-                newbindings = _bindingTable.Query.Where(b => b.RowKey == idb).ToList();
+                newsite = _webSiteTable.CreateQuery<WebSiteRow>().Where(t => t.RowKey == id).FirstOrDefault();
+                newbindings = _bindingTable.CreateQuery<BindingRow>().Where(b => b.RowKey == idb).ToList();
 
                 Assert.IsNotNull(newsite);
 
                 _repository.RemoveWebSite(site.Id);
 
-                newsite = _webSiteTable.Query.Where(t => t.RowKey == id).FirstOrDefault();
+                newsite = _webSiteTable.CreateQuery<WebSiteRow>().Where(t => t.RowKey == id).FirstOrDefault();
                 Assert.IsNull(newsite);
 
-                newbindings = _bindingTable.Query.Where(b => b.RowKey == idb).ToList();
+                newbindings = _bindingTable.CreateQuery<BindingRow>().Where(b => b.RowKey == idb).ToList();
 
                 Assert.IsNotNull(newbindings);
                 Assert.AreEqual(0, newbindings.Count());
@@ -129,12 +131,15 @@ namespace AzureWebFarm.Tests.Storage
             {
                 if (newsite != null)
                 {
-                    _webSiteTable.Delete(newsite);
+                    _webSiteTable.Execute(TableOperation.Delete(newsite));
                 }
 
                 if (newbindings != null && newbindings.Any())
                 {
-                    _bindingTable.Delete(newbindings);
+                    foreach (var binding in newbindings)
+                    {
+                        _bindingTable.Execute(TableOperation.Delete(binding));
+                    }
                 }
             }
         }
@@ -152,10 +157,10 @@ namespace AzureWebFarm.Tests.Storage
 
             var id = site.Id.ToString();
 
-            var newsite = _webSiteTable.Query.Where(t => t.RowKey == id).FirstOrDefault();
+            var newsite = _webSiteTable.CreateQuery<WebSiteRow>().Where(t => t.RowKey == id).FirstOrDefault();
 
             Assert.IsNotNull(newsite);
-            _webSiteTable.Delete(newsite);
+            _webSiteTable.Execute(TableOperation.Delete(newsite));
         }
 
         [Test]
@@ -172,13 +177,13 @@ namespace AzureWebFarm.Tests.Storage
                 var id = site.Id.ToString();
                 var idb = binding.Id.ToString();
 
-                newsite = _webSiteTable.Query.Where(t => t.RowKey == id).FirstOrDefault();
+                newsite = _webSiteTable.CreateQuery<WebSiteRow>().Where(t => t.RowKey == id).FirstOrDefault();
 
                 Assert.IsNotNull(newsite);
                 Assert.AreEqual(site.Name, newsite.Name);
                 Assert.AreEqual(site.Description, newsite.Description);
 
-                newbinding = _bindingTable.Query.Where(b => b.RowKey == idb).FirstOrDefault();
+                newbinding = _bindingTable.CreateQuery<BindingRow>().Where(b => b.RowKey == idb).FirstOrDefault();
 
                 Assert.IsNotNull(newbinding);
                 Assert.AreEqual(binding.WebSiteId, newbinding.WebSiteId);
@@ -195,12 +200,12 @@ namespace AzureWebFarm.Tests.Storage
             {
                 if (newsite != null)
                 {
-                    _webSiteTable.Delete(newsite);
+                    _webSiteTable.Execute(TableOperation.Delete(newsite));
                 }
 
                 if (newbinding != null)
                 {
-                    _bindingTable.Delete(newbinding);
+                    _bindingTable.Execute(TableOperation.Delete(newbinding));
                 }
             }
         }
@@ -217,13 +222,13 @@ namespace AzureWebFarm.Tests.Storage
 
                 var id = site.Id.ToString();
 
-                newsite = _webSiteTable.Query.Where(t => t.RowKey == id).FirstOrDefault();
+                newsite = _webSiteTable.CreateQuery<WebSiteRow>().Where(t => t.RowKey == id).FirstOrDefault();
 
                 Assert.IsNotNull(newsite);
                 Assert.AreEqual(site.Name, newsite.Name);
                 Assert.AreEqual(site.Description, newsite.Description);
 
-                newbindings = _bindingTable.Query.Where(b => b.WebSiteId == site.Id).ToList();
+                newbindings = _bindingTable.CreateQuery<BindingRow>().Where(b => b.WebSiteId == site.Id).ToList();
 
                 Assert.IsNotNull(newbindings);
                 Assert.AreEqual(10, newbindings.Count());
@@ -238,12 +243,15 @@ namespace AzureWebFarm.Tests.Storage
             {
                 if (newsite != null)
                 {
-                    _webSiteTable.Delete(newsite);
+                    _webSiteTable.Execute(TableOperation.Delete(newsite));
                 }
 
                 if (newbindings != null && newbindings.Any())
                 {
-                    _bindingTable.Delete(newbindings);
+                    foreach (var binding in newbindings)
+                    {
+                        _bindingTable.Execute(TableOperation.Delete(binding));
+                    }
                 }
             }
         }
@@ -261,11 +269,11 @@ namespace AzureWebFarm.Tests.Storage
 
                 var id = site.Id.ToString();
 
-                newsite = _webSiteTable.Query.Where(t => t.RowKey == id).FirstOrDefault();
+                newsite = _webSiteTable.CreateQuery<WebSiteRow>().Where(t => t.RowKey == id).FirstOrDefault();
 
                 _repository.RemoveBinding(binding.Id);
 
-                newbindings = _bindingTable.Query.Where(b => b.WebSiteId == site.Id).ToList();
+                newbindings = _bindingTable.CreateQuery<BindingRow>().Where(b => b.WebSiteId == site.Id).ToList();
                 Assert.IsNotNull(newbindings);
                 Assert.AreEqual(1, newbindings.Count());
             }
@@ -273,12 +281,15 @@ namespace AzureWebFarm.Tests.Storage
             {
                 if (newsite != null)
                 {
-                    _webSiteTable.Delete(newsite);
+                    _webSiteTable.Execute(TableOperation.Delete(newsite));
                 }
 
                 if (newbindings != null && newbindings.Any())
                 {
-                    _bindingTable.Delete(newbindings);
+                    foreach (var binding in newbindings)
+                    {
+                        _bindingTable.Execute(TableOperation.Delete(binding));
+                    }
                 }
             }
         }
@@ -295,13 +306,13 @@ namespace AzureWebFarm.Tests.Storage
 
                 var id = site.Id.ToString();
 
-                newsite = _webSiteTable.Query.Where(t => t.RowKey == id).FirstOrDefault();
-                newbindings = _bindingTable.Query.Where(b => b.WebSiteId == site.Id).ToList();
+                newsite = _webSiteTable.CreateQuery<WebSiteRow>().Where(t => t.RowKey == id).FirstOrDefault();
+                newbindings = _bindingTable.CreateQuery<BindingRow>().Where(b => b.WebSiteId == site.Id).ToList();
 
                 _repository.RemoveWebSite(site.Id);
 
-                newsite = _webSiteTable.Query.Where(t => t.RowKey == id).FirstOrDefault();
-                newbindings = _bindingTable.Query.Where(b => b.WebSiteId == site.Id).ToList();
+                newsite = _webSiteTable.CreateQuery<WebSiteRow>().Where(t => t.RowKey == id).FirstOrDefault();
+                newbindings = _bindingTable.CreateQuery<BindingRow>().Where(b => b.WebSiteId == site.Id).ToList();
 
                 Assert.IsNull(newsite);
                 Assert.IsNotNull(newbindings);
@@ -311,12 +322,15 @@ namespace AzureWebFarm.Tests.Storage
             {
                 if (newsite != null)
                 {
-                    _webSiteTable.Delete(newsite);
+                    _webSiteTable.Execute(TableOperation.Delete(newsite));
                 }
 
                 if (newbindings != null && newbindings.Any())
                 {
-                    _bindingTable.Delete(newbindings);
+                    foreach (var binding in newbindings)
+                    {
+                        _bindingTable.Execute(TableOperation.Delete(binding));
+                    }
                 }
             }
         }
@@ -345,7 +359,10 @@ namespace AzureWebFarm.Tests.Storage
             }
             finally
             {
-                _webSiteTable.Delete(siteInfos);
+                foreach (var webSiteRow in siteInfos)
+                {
+                    _webSiteTable.Execute(TableOperation.Delete(webSiteRow));
+                }
             }
         }
 
@@ -363,8 +380,8 @@ namespace AzureWebFarm.Tests.Storage
                 var id = site.Id.ToString();
                 var idb = binding.Id.ToString();
 
-                newsite = _webSiteTable.Query.Where(t => t.RowKey == id).FirstOrDefault();
-                newbindings = _bindingTable.Query.Where(b => b.RowKey == idb).ToList();
+                newsite = _webSiteTable.CreateQuery<WebSiteRow>().Where(t => t.RowKey == id).FirstOrDefault();
+                newbindings = _bindingTable.CreateQuery<BindingRow>().Where(b => b.RowKey == idb).ToList();
 
                 binding.HostName = "www.newhost.com";
                 binding.IpAddress = "127.0.0.2";
@@ -372,23 +389,28 @@ namespace AzureWebFarm.Tests.Storage
                 binding.CertificateThumbprint = Guid.NewGuid().ToString();
                 _repository.UpdateBinding(binding);
 
-                BindingRow newbinding = _bindingTable.Query.Where(b => b.RowKey == idb).FirstOrDefault();
+                BindingRow newbinding = _bindingTable.CreateQuery<BindingRow>().Where(b => b.RowKey == idb).FirstOrDefault();
                 Assert.IsNotNull(newbinding);
                 Assert.AreEqual(binding.HostName, newbinding.HostName);
                 Assert.AreEqual(binding.IpAddress, newbinding.IpAddress);
                 Assert.AreEqual(binding.Protocol, newbinding.Protocol);
                 Assert.AreEqual(binding.CertificateThumbprint, newbinding.CertificateThumbprint);
+
+                newbindings = _bindingTable.CreateQuery<BindingRow>().Where(b => b.RowKey == idb).ToList();
             }
             finally
             {
                 if (newsite != null)
                 {
-                    _webSiteTable.Delete(newsite);
+                    _webSiteTable.Execute(TableOperation.Delete(newsite));
                 }
 
                 if (newbindings != null && newbindings.Any())
                 {
-                    _bindingTable.Delete(newbindings);
+                    foreach (var binding in newbindings)
+                    {
+                        _bindingTable.Execute(TableOperation.Delete(binding));
+                    }
                 }
             }
         }
@@ -407,14 +429,14 @@ namespace AzureWebFarm.Tests.Storage
                 var id = site.Id.ToString();
                 var idb = binding.Id.ToString();
 
-                newsite = _webSiteTable.Query.Where(t => t.RowKey == id).FirstOrDefault();
-                newbindings = _bindingTable.Query.Where(b => b.RowKey == idb).ToList();
+                newsite = _webSiteTable.CreateQuery<WebSiteRow>().Where(t => t.RowKey == id).FirstOrDefault();
+                newbindings = _bindingTable.CreateQuery<BindingRow>().Where(b => b.RowKey == idb).ToList();
 
                 site.Name = "New Name";
                 site.Description = "New Description";
                 _repository.UpdateWebSite(site);
 
-                newsite = _webSiteTable.Query.Where(t => t.RowKey == id).FirstOrDefault();
+                newsite = _webSiteTable.CreateQuery<WebSiteRow>().Where(t => t.RowKey == id).FirstOrDefault();
                 Assert.IsNotNull(newsite);
                 Assert.AreEqual(site.Name, newsite.Name);
                 Assert.AreEqual(site.Description, newsite.Description);
@@ -423,12 +445,15 @@ namespace AzureWebFarm.Tests.Storage
             {
                 if (newsite != null)
                 {
-                    _webSiteTable.Delete(newsite);
+                    _webSiteTable.Execute(TableOperation.Delete(newsite));
                 }
 
                 if (newbindings != null && newbindings.Any())
                 {
-                    _bindingTable.Delete(newbindings);
+                    foreach (var binding in newbindings)
+                    {
+                        _bindingTable.Execute(TableOperation.Delete(binding));
+                    }
                 }
             }
         }

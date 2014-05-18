@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using AzureToolkit;
+using WindowsAzure.Storage.Services;
 using AzureWebFarm.Entities;
 using AzureWebFarm.Storage;
-using Microsoft.WindowsAzure;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Auth;
 
 namespace AzureWebFarm.AdminConsole
 {
@@ -18,7 +19,7 @@ namespace AzureWebFarm.AdminConsole
             Console.Write("Enter the storage account key: ");
             var accountKey = Console.ReadLine();
             
-            var repo = new WebSiteRepository(new AzureStorageFactory(new CloudStorageAccount(new StorageCredentialsAccountAndKey(accountName, accountKey), true)));
+            var repo = new WebSiteRepository(new AzureStorageFactory(new CloudStorageAccount(new StorageCredentials(accountName, accountKey), true)));
 
             var sites = repo.RetrieveWebSitesWithBindings();
             var i = 0;

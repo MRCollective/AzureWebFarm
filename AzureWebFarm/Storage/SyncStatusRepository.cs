@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using AzureToolkit;
+using WindowsAzure.Storage.Services;
 using AzureWebFarm.Entities;
 using AzureWebFarm.Helpers;
+using Microsoft.WindowsAzure.Storage.Table;
 
 namespace AzureWebFarm.Storage
 {
@@ -19,31 +20,33 @@ namespace AzureWebFarm.Storage
 
     public class SyncStatusRepository : ISyncStatusRepository
     {
-        private readonly IAzureTable<SyncStatusRow> _table;
+        private readonly CloudTable _table;
 
         public SyncStatusRepository(IAzureStorageFactory storageFactory)
         {
-            _table = storageFactory.GetTable<SyncStatusRow>(typeof (SyncStatusRow).Name);
-            _table.Initialize();
+            _table = storageFactory.GetTable(typeof (SyncStatusRow).Name);
+            _table.CreateIfNotExists();
         }
 
         public void RemoveWebSiteStatus(string webSiteName)
         {
             var webSiteStatus = RetrieveSyncStatus(webSiteName);
-            if (webSiteStatus != null && webSiteStatus.Any())
+            if (webSiteStatus == null || !webSiteStatus.Any()) return;
+            
+            foreach (var status in webSiteStatus)
             {
-                _table.Delete(webSiteStatus.Select(s => s.ToRow()));
+                _table.Execute(TableOperation.Delete(status.ToRow()));
             }
         }
 
         public void Update(SyncStatus syncStatus)
         {
-            _table.AddOrUpdate(syncStatus.ToRow());
+            _table.Execute(TableOperation.InsertOrReplace(syncStatus.ToRow()));
         }
 
         public IEnumerable<SyncStatus> RetrieveSyncStatuses()
         {
-            return _table.Query
+            return _table.CreateQuery<SyncStatusRow>()
                 .Where(s => s.PartitionKey.Equals(AzureRoleEnvironment.DeploymentId(), StringComparison.OrdinalIgnoreCase))
                 .ToList()
                 .Select(s => s.ToModel())
@@ -62,12 +65,12 @@ namespace AzureWebFarm.Storage
                 LastError = lastError
             };
 
-            _table.AddOrUpdate(syncStatus.ToRow());
+            _table.Execute(TableOperation.InsertOrReplace(syncStatus.ToRow()));
         }
 
         public IEnumerable<SyncStatus> RetrieveSyncStatus(string webSiteName)
         {
-            return _table.Query
+            return _table.CreateQuery<SyncStatusRow>()
                 .Where(
                     s =>
                     s.PartitionKey.Equals(AzureRoleEnvironment.DeploymentId(), StringComparison.OrdinalIgnoreCase) &&
@@ -78,7 +81,7 @@ namespace AzureWebFarm.Storage
 
         public IEnumerable<SyncStatus> RetrieveSyncStatusByInstanceId(string roleInstanceId)
         {
-            return _table.Query
+            return _table.CreateQuery<SyncStatusRow>()
                 .Where(
                     s =>
                     s.PartitionKey.Equals(AzureRoleEnvironment.DeploymentId(), StringComparison.OrdinalIgnoreCase) &&

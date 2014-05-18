@@ -1,9 +1,9 @@
 ﻿using System;
-using Microsoft.WindowsAzure.StorageClient;
+using Microsoft.WindowsAzure.Storage.Table;
 
 namespace AzureWebFarm.Storage
 {
-    public class BindingRow : TableServiceEntity
+    public class BindingRow : TableEntity
     {
         public BindingRow()
             : this(Guid.NewGuid())

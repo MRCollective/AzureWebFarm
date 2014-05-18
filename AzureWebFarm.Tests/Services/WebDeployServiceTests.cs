@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Threading;
-using AzureToolkit;
 using AzureWebFarm.Helpers;
 using AzureWebFarm.Services;
 using AzureWebFarm.Tests.Services.Base;
 using Castle.Core.Logging;
-using Microsoft.WindowsAzure;
 using NUnit.Framework;
 
 namespace AzureWebFarm.Tests.Services
@@ -52,7 +50,7 @@ namespace AzureWebFarm.Tests.Services
             var hasWebDeployLease = AzureRoleEnvironment.HasWebDeployLease();
             
             Assert.That(hasWebDeployLease, Is.False);
-            Assert.That(AzureRoleEnvironment.WebDeployLeaseBlob().Metadata["InstanceId"], Is.Null);
+            Assert.That(AzureRoleEnvironment.WebDeployLeaseBlob().Metadata.ContainsKey("InstanceId"), Is.False);
         }
 
         [TearDown]

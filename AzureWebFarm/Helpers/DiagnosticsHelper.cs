@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Text;
 using System.Threading;
 using Castle.Core.Logging;
-using Microsoft.WindowsAzure;
 using Microsoft.WindowsAzure.Diagnostics;
-using Microsoft.WindowsAzure.StorageClient;
+using Microsoft.WindowsAzure.Storage;
+using LogLevel = Microsoft.WindowsAzure.Diagnostics.LogLevel;
 
 namespace AzureWebFarm.Helpers
 {
@@ -22,10 +23,11 @@ namespace AzureWebFarm.Helpers
             var storageAccount = CloudStorageAccount.Parse(AzureRoleEnvironment.GetConfigurationSettingValue(Constants.DiagnosticsConnectionStringKey));
 
             var container = storageAccount.CreateCloudBlobClient().GetContainerReference("exceptions");
-            container.CreateIfNotExist();
+            container.CreateIfNotExists();
 
-            var blob = container.GetBlobReference(string.Format("exception-{0}-{1}.log", AzureRoleEnvironment.CurrentRoleInstanceId, DateTime.UtcNow.Ticks));
-            blob.UploadText(ex.ToString());
+            var blob = container.GetBlobReferenceFromServer(string.Format("exception-{0}-{1}.log", AzureRoleEnvironment.CurrentRoleInstanceId, DateTime.UtcNow.Ticks));
+            var buffer = Encoding.UTF8.GetBytes(ex.ToString());
+            blob.UploadFromByteArray(buffer, 0, buffer.Length);
         }
 
         public static void ConfigureDiagnosticMonitor(LogLevel logLevel)

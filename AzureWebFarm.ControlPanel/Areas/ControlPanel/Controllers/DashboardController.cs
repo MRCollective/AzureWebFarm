@@ -80,7 +80,7 @@ namespace AzureWebFarm.ControlPanel.Areas.ControlPanel.Controllers
         {
             public string SyncStatus { get; set; }
             public string SyncError { get; set; }
-            public DateTime? SyncTime { get; set; }
+            public DateTimeOffset SyncTime { get; set; }
         }
     }
 }

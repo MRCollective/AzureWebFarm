@@ -1,9 +1,11 @@
 ﻿using System;
+using System.IO;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Castle.Core.Logging;
-using Microsoft.WindowsAzure.StorageClient;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Blob;
 
 namespace AzureWebFarm.Helpers
 {
@@ -13,7 +15,7 @@ namespace AzureWebFarm.Helpers
     /// </summary>
     internal class AutoRenewLease : IDisposable
     {
-        private readonly CloudBlob _blob;
+        private readonly CloudBlockBlob _blob;
         private bool _disposed;
         private readonly CancellationTokenSource _cancellationTokenSource;
         private readonly ILogger _logger;
@@ -30,24 +32,24 @@ namespace AzureWebFarm.Helpers
             private set;
         }
 
-        public AutoRenewLease(ILoggerFactory loggerFactory, LoggerLevel logLevel, CloudBlob blob, int renewLeaseSeconds = 40, int leaseLengthSeconds = 90)
+        public AutoRenewLease(ILoggerFactory loggerFactory, LoggerLevel logLevel, CloudBlockBlob blob, int renewLeaseSeconds = 40, int leaseLengthSeconds = 60)
         {
             _logger = loggerFactory.Create(GetType(), logLevel);
-            var autoRenewLease = this;
             _blob = blob;
-            blob.Container.CreateIfNotExist();
+            blob.Container.CreateIfNotExists();
             try
             {
-                blob.UploadByteArray(new byte[0], new BlobRequestOptions { AccessCondition = AccessCondition.IfNoneMatch("*")});
-            }
-            catch (StorageClientException ex)
-            {
-                if (ex.ErrorCode != StorageErrorCode.BlobAlreadyExists)
+                using (var ms = new MemoryStream())
                 {
-                    if (ex.StatusCode != HttpStatusCode.PreconditionFailed)
-                        throw;
+                    blob.UploadFromStream(ms);
                 }
             }
+            catch (StorageException ex)
+            {
+                if (ex.RequestInformation.HttpStatusCode != 409 && ex.RequestInformation.HttpStatusCode != (int)HttpStatusCode.PreconditionFailed)
+                    throw;
+            }
+
             LeaseId = blob.TryAcquireLease(leaseLengthSeconds);
             if (!HasLease)
                 return;
@@ -63,7 +65,7 @@ namespace AzureWebFarm.Helpers
                         if (_cancellationTokenSource.IsCancellationRequested)
                             break;
 
-                        blob.RenewLease(autoRenewLease.LeaseId);
+                        blob.RenewLease(AccessCondition.GenerateLeaseCondition(LeaseId));
                     }
                 }
                 catch (Exception e)
@@ -96,6 +98,7 @@ namespace AzureWebFarm.Helpers
 
                 try
                 {
+                    _logger.DebugFormat("Instance {0} releasing blob lease", AzureRoleEnvironment.CurrentRoleInstanceId());
                     _blob.TryReleaseLease(LeaseId);
                 }
                 catch (Exception ex)
