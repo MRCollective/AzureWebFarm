@@ -5,7 +5,7 @@
       AzureWebFarm
     </id>
     <version>
-      0.9.2.0
+      1.0.0.0
     </version>
     <authors>
       Robert Moore, Matt Davies
@@ -14,16 +14,16 @@
       MsDeploy enabled Web Farm using Web Roles in Azure based on Windows Azure Accelerator for Web Roles and including a background worker execution model.
     </description>
     <projectUrl>
-      https://github.com/robdmoore/AzureWebFarm
+      https://github.com/MRCollective/AzureWebFarm
     </projectUrl>
     <licenseUrl>
-      https://github.com/robdmoore/AzureWebFarm/blob/master/LICENSE.txt
+      https://github.com/MRCollective/AzureWebFarm/blob/master/LICENSE.txt
     </licenseUrl>
     <iconUrl>
-      https://raw.github.com/robdmoore/AzureWebFarm/master/logo.png
+      https://raw.github.com/MRCollective/AzureWebFarm/master/logo.png
     </iconUrl>
     <releaseNotes>
-      Please see https://github.com/robdmoore/AzureWebFarm/blob/master/BREAKING_CHANGES.md for any breaking changes.
+      Please see https://github.com/MRCollective/AzureWebFarm/blob/master/BREAKING_CHANGES.md for any breaking changes.
     </releaseNotes>
     <tags>
       azure iis web-farm msdeploy web-deploy web-role
