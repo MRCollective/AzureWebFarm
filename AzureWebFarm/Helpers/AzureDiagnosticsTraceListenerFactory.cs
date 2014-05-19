@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using Castle.Core.Logging;
-using AzureToolkit;
 
 namespace AzureWebFarm.Helpers
 {
@@ -36,7 +35,7 @@ namespace AzureWebFarm.Helpers
 
         protected override void Log(LoggerLevel loggerLevel, string loggerName, string message, Exception exception)
         {
-            var logMessage = string.Format("[{0}] {1}{2}", loggerName, message, exception != null ? "\r\n" + exception.TraceInformation() : "");
+            var logMessage = string.Format("[{0}] {1}{2}", loggerName, message, exception != null ? "\r\n" + exception : "");
             switch (loggerLevel)
             {
                 case LoggerLevel.Debug:

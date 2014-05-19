@@ -4,7 +4,7 @@ using Autofac.Integration.Mvc;
 using AzureWebFarm.Config;
 using AzureWebFarm.Helpers;
 using Castle.Core.Logging;
-using Microsoft.WindowsAzure;
+using Microsoft.WindowsAzure.Storage;
 
 namespace AzureWebFarm.ControlPanel.App_Start
 {
