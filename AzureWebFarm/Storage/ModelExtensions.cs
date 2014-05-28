@@ -88,7 +88,7 @@ namespace AzureWebFarm.Storage
             {
                 Status = model.Status.ToString(),
                 IsOnline = model.IsOnline,
-                LastError = model.LastError != null ? model.LastError.ToString() : null
+                LastError = model.LastError.TraceInformation()
             };
         }
 

@@ -105,6 +105,7 @@
     <Compile Include="Entities\WebSite.cs" />
     <Compile Include="Helpers\AutoRenewLease.cs" />
     <Compile Include="Helpers\AzureDiagnosticsTraceListenerFactory.cs" />
+    <Compile Include="Helpers\ExceptionExtensions.cs" />
     <Compile Include="Helpers\LeaseBlobExtensions.cs" />
     <Compile Include="Services\WebDeployService.cs" />
     <Compile Include="Storage\ModelExtensions.cs" />
