@@ -16,6 +16,7 @@
                 c.For(b => b.Port);
                 c.For(b => b.IpAddress);
                 c.For(b => new HtmlString(!string.IsNullOrEmpty(b.CertificateThumbprint) ? HttpUtility.HtmlEncode(b.CertificateThumbprint) : "<em>None</em>")).Named("Certificate Thumbprint");
+                c.For(b => new HtmlString(string.Format("<form method=\"post\" action=\"{0}\"><button class=\"btn btn-danger\" type=\"submit\" onclick=\"return confirm('Are you sure you want to delete the binding for {1}://{2}:{3}');\"><span class=\"glyphicon glyphicon-remove\"></span> Delete</button></form>", Url.Action("Delete", "Binding", new {b.Id}), b.Protocol, b.HostName, b.Port))).Named("Delete Binding");
             })
         </div>
     </div>
