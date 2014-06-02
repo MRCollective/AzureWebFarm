@@ -155,6 +155,7 @@
     <Compile Include="App_Start\ContainerConfig.cs" />
     <Compile Include="Areas\ControlPanel\Controllers\DashboardController.cs" />
     <Compile Include="Areas\ControlPanel\Controllers\EmbeddedResourceController.cs" />
+    <Compile Include="Areas\ControlPanel\Controllers\Filters\ControlPanelLocalhostOnlyFilter.cs" />
     <Compile Include="Areas\ControlPanel\Controllers\HomeController.cs" />
     <Compile Include="Areas\ControlPanel\Controllers\WebSiteController.cs" />
     <Compile Include="Areas\ControlPanel\ControlPanelAreaRegistration.cs" />
@@ -201,7 +202,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Areas\ControlPanel\Content\Images\" />
-    <Folder Include="Areas\ControlPanel\Models\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />

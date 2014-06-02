@@ -6,7 +6,7 @@ using AzureWebFarm.Helpers;
 using Castle.Core.Logging;
 using Microsoft.WindowsAzure.Storage;
 
-namespace AzureWebFarm.ControlPanel.App_Start
+namespace AzureWebFarm.ControlPanel
 {
     public static class ContainerConfig
     {
