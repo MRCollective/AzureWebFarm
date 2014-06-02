@@ -153,6 +153,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App_Start\ContainerConfig.cs" />
+    <Compile Include="Areas\ControlPanel\Controllers\BindingController.cs" />
     <Compile Include="Areas\ControlPanel\Controllers\DashboardController.cs" />
     <Compile Include="Areas\ControlPanel\Controllers\EmbeddedResourceController.cs" />
     <Compile Include="Areas\ControlPanel\Controllers\Filters\ControlPanelLocalhostOnlyFilter.cs" />
