@@ -1,8 +1,4 @@
-﻿body {
-  min-height: 2000px;
-}
-
-.navbar-static-top {
+﻿.navbar-static-top {
   margin-bottom: 19px;
 }
 
@@ -28,4 +24,8 @@
     color: #fff;
     background-color: #428bca;
     border-color: #357ebd;
+}
+
+p {
+    margin-bottom: 20px;
 }

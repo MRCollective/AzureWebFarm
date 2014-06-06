@@ -21,6 +21,7 @@
         </div>
     </div>
 </div>
+<p><a class="btn btn-info" href="@Url.Action("Create", "Binding", new {WebsiteId = Model.Site.Id})"><span class="glyphicon glyphicon-cloud-upload"></span> Create binding</a></p>
 
 <div class="panel panel-primary">
     <div class="panel-heading">Sync Status</div>
@@ -39,5 +40,5 @@
 </div>
 
 <form action="@Url.Action("Edit", "WebSite", new {Model.Site.Id})" method="get">
-    <button class="btn btn-primary"><span class="glyphicon glyphicon-globe"></span> Edit website</button>
+    <button class="btn btn-info"><span class="glyphicon glyphicon-globe"></span> Edit website</button>
 </form>
