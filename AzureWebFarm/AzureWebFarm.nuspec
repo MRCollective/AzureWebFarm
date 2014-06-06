@@ -32,13 +32,12 @@
       en-US 
     </language>
     <dependencies>
-      <dependency id="WindowsAzure.Storage" version="1.7" />
-      <dependency id="AzureToolkit" version="2.4.10" />
-      <dependency id="Microsoft.WindowsAzure.ConfigurationManager" version="1.8" />
-      <dependency id="Castle.Core" version="3.2" />
-      <dependency id="Autofac" version="3.0.2" />
-      <dependency id="ChameleonForms.TwitterBootstrap3" version="1.0" />
-      <dependency id="foolproof" version="0.9.4517" />
+      <dependency id="WindowsAzure.Storage" version="4.0.0" />
+      <dependency id="WindowsAzure.Storage.Services" version="0.1.6-alpha" />
+      <dependency id="Microsoft.WindowsAzure.ConfigurationManager" version="2.0.3" />
+      <dependency id="Castle.Core" version="3.2.0" />
+      <dependency id="Autofac" version="3.1.5" />
+      <dependency id="ChameleonForms" version="1.0.1.3" />
       <dependency id="Microsoft.AspNet.Mvc" version="4.0.30506.0" />
       <dependency id="MvcContrib.Mvc3-ci" version="3.0.100.0" />
     </dependencies>
