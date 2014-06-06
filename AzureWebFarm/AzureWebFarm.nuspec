@@ -52,8 +52,8 @@
     <file src="..\AzureWebFarm\bin\Release\AzureWebFarm.dll" target="lib\NET40" />
     <file src="..\AzureWebFarm\bin\Release\AzureWebFarm.pdb" target="lib\NET40" />
     <!-- todo: <file src="AzureWebFarm\bin\Release\AzureWebFarm.XML" target="lib\NET40" />-->
-    <file src="..\AzureWebFarm.ControlPanel\bin\Release\AzureWebFarm.ControlPanel.dll" target="lib\NET40" />
-    <file src="..\AzureWebFarm.ControlPanel\bin\Release\AzureWebFarm.ControlPanel.pdb" target="lib\NET40" />
+    <file src="..\AzureWebFarm.ControlPanel\bin\AzureWebFarm.ControlPanel.dll" target="lib\NET40" />
+    <file src="..\AzureWebFarm.ControlPanel\bin\AzureWebFarm.ControlPanel.pdb" target="lib\NET40" />
     <file src="..\AzureWebFarm\bin\Release\Microsoft.Web.Administration.dll" target="lib\NET40" />
     <file src="..\AzureWebFarm\bin\Release\Microsoft.Web.Deployment.dll" target="lib\NET40" />
     <file src="..\AzureWebFarm.Example.Web\app.config" target="content" />
