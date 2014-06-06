@@ -1,13 +1,11 @@
 ﻿@using AzureWebFarm.ControlPanel.Areas.ControlPanel.Controllers
 @using ChameleonForms.Templates.TwitterBootstrap3
-@model CreateBindingViewModel
+@model EditBindingViewModel
 
 <h1>Create Binding</h1>
 
 @using (var f = Html.BeginChameleonForm())
 {
-    @Html.HiddenFor(m => m.WebsiteId)
-
     using (var s = f.BeginSection())
     {
         @s.FieldFor(m => m.HostName)
@@ -19,6 +17,6 @@
     
     using (var n = f.BeginNavigation())
     {
-        @n.Submit("Create").WithStyle(EmphasisStyle.Primary).WithIcon("cloud-upload")
+        @n.Submit("Edit").WithStyle(EmphasisStyle.Primary).WithIcon("cloud-upload")
     }
 }

@@ -1,7 +1,14 @@
 ﻿@using AzureWebFarm.ControlPanel.Areas.ControlPanel.Views
+@using AzureWebFarm.Entities
 @using MvcContrib.UI.Grid
 @using AzureWebFarm.ControlPanel.Areas.ControlPanel.Controllers
 @model WebSiteDetailViewModel
+
+@helper BindingButtons(Binding b)
+{
+    <a class="btn btn-primary" href="@Url.Action("Edit", "Binding", new {b.Id})"><span class="glyphicon glyphicon-cloud-upload"></span> Edit binding</a>
+    <form method="post" action="@Url.Action("Delete", "Binding", new {b.Id})" style="display: inline;"><button class="btn btn-danger" type="submit" onclick="return confirm('Are you sure you want to delete the binding for @b.Protocol://@b.HostName:@b.Port');"><span class="glyphicon glyphicon-remove"></span> Delete</button></form>
+}
 
 <h1>Website: @Model.Site.Name</h1>
 
@@ -16,7 +23,7 @@
                 c.For(b => b.Port);
                 c.For(b => b.IpAddress);
                 c.For(b => new HtmlString(!string.IsNullOrEmpty(b.CertificateThumbprint) ? HttpUtility.HtmlEncode(b.CertificateThumbprint) : "<em>None</em>")).Named("Certificate Thumbprint");
-                c.For(b => new HtmlString(string.Format("<form method=\"post\" action=\"{0}\"><button class=\"btn btn-danger\" type=\"submit\" onclick=\"return confirm('Are you sure you want to delete the binding for {1}://{2}:{3}');\"><span class=\"glyphicon glyphicon-remove\"></span> Delete</button></form>", Url.Action("Delete", "Binding", new {b.Id}), b.Protocol, b.HostName, b.Port))).Named("Delete Binding");
+                c.For(b => BindingButtons(b)).Named("Actions");
             })
         </div>
     </div>

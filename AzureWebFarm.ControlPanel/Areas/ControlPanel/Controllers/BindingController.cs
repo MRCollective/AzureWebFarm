@@ -29,6 +29,9 @@ namespace AzureWebFarm.ControlPanel.Areas.ControlPanel.Controllers
         [HttpPost]
         public ActionResult Create(CreateBindingViewModel vm)
         {
+            if (!ModelState.IsValid)
+                return View(vm);
+
             var binding = new Binding
             {
                 HostName = vm.HostName,
@@ -39,7 +42,36 @@ namespace AzureWebFarm.ControlPanel.Areas.ControlPanel.Controllers
             };
             _webSiteRepository.AddBindingToWebSite(vm.WebsiteId, binding);
 
-            return RedirectToAction("Detail", "WebSite", new {Id = vm.WebsiteId});
+            return RedirectToAction("Detail", "WebSite", new { area = ControlPanelAreaRegistration.Name, Id = vm.WebsiteId });
+        }
+
+        public ActionResult Edit(Guid id)
+        {
+            var binding = _webSiteRepository.RetrieveBinding(id);
+            if (binding == null)
+                return HttpNotFound();
+
+            return View(new EditBindingViewModel(binding));
+        }
+
+        [HttpPost]
+        public ActionResult Edit(EditBindingViewModel vm)
+        {
+            var binding = _webSiteRepository.RetrieveBinding(vm.Id);
+            if (binding == null)
+                return HttpNotFound();
+
+            if (!ModelState.IsValid)
+                return View(vm);
+
+            binding.HostName = vm.HostName;
+            binding.Port = vm.Port;
+            binding.Protocol = vm.Protocol.ToString().ToLower();
+            binding.IpAddress = vm.IpAddress;
+            binding.CertificateThumbprint = vm.CertificateThumbprint;
+            _webSiteRepository.UpdateBinding(binding);
+
+            return RedirectToAction("Detail", "WebSite", new { area = ControlPanelAreaRegistration.Name, Id = binding.WebSiteId });
         }
 
         [HttpPost]
@@ -50,14 +82,41 @@ namespace AzureWebFarm.ControlPanel.Areas.ControlPanel.Controllers
                 return HttpNotFound();
 
             _webSiteRepository.RemoveBinding(id);
-            return RedirectToAction("Detail", "WebSite", new {Id = binding.WebSiteId});
+            return RedirectToAction("Detail", "WebSite", new { area = ControlPanelAreaRegistration.Name, Id = binding.WebSiteId });
         }
     }
 
-    public class CreateBindingViewModel
+    public class CreateBindingViewModel : BindingViewModel
+    {
+        public CreateBindingViewModel()
+        {
+            Port = 80;
+            IpAddress = "*";
+        }
+
+        public Guid WebsiteId { get; set; }
+    }
+
+    public class EditBindingViewModel : BindingViewModel
+    {
+        public EditBindingViewModel() {}
+
+        public EditBindingViewModel(Binding binding)
+        {
+            HostName = binding.HostName;
+            Port = binding.Port;
+            Protocol = (Protocol) Enum.Parse(typeof (Protocol), binding.Protocol, true);
+            IpAddress = binding.IpAddress;
+            CertificateThumbprint = binding.CertificateThumbprint;
+        }
+
+        public Guid Id { get; set; }
+    }
+
+    public class BindingViewModel
     {
         private static readonly List<Certificate> CertificatesCache = new List<Certificate>();
-        static CreateBindingViewModel()
+        static BindingViewModel()
         {
             var store = new X509Store(StoreName.My, StoreLocation.LocalMachine);
             store.Open(OpenFlags.ReadWrite);
@@ -72,12 +131,6 @@ namespace AzureWebFarm.ControlPanel.Areas.ControlPanel.Controllers
             store.Close();
         }
 
-        public CreateBindingViewModel()
-        {
-            Port = 80;
-            IpAddress = "*";
-        }
-
         [Required]
         public string HostName { get; set; }
         [Required]
@@ -89,7 +142,6 @@ namespace AzureWebFarm.ControlPanel.Areas.ControlPanel.Controllers
         public string IpAddress { get; set; }
         [ExistsIn("Certificates", "Thumbprint", "Name")]
         public string CertificateThumbprint { get; set; }
-        public Guid WebsiteId { get; set; }
 
         public IList<Certificate> Certificates { get { return CertificatesCache; } }
     }
