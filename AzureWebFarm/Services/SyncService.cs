@@ -417,49 +417,16 @@ namespace AzureWebFarm.Services
 
                     if (!site.Name.Equals(AzureRoleEnvironment.RoleWebsiteName(), StringComparison.OrdinalIgnoreCase))
                     {
-                        var sitePath = Path.Combine(_localSitesPath, siteName);
-                        var siteLastModifiedTime = GetFolderLastModifiedTimeUtc(sitePath);
+                        PackageSite(siteName);
+                    }
+                }
 
-                        if (!_siteDeployTimes.ContainsKey(siteName))
-                        {
-                            _siteDeployTimes.Add(siteName, siteLastModifiedTime);
-                        }
-
-                        _logger.DebugFormat("[IIS => Local Storage] - Site last modified time: '{0}'", siteLastModifiedTime);
-
-                        // If the site has been modified since the last deploy, but not within the last {SyncWait}s (otherwise it might be mid-sync)
-                        if (_siteDeployTimes[siteName] < siteLastModifiedTime && siteLastModifiedTime < DateTime.UtcNow.AddSeconds(-SyncWait))
-                        {
-                            // Update status to deployed
-                            UpdateSyncStatus(siteName, SyncInstanceStatus.Deployed);
-
-                            // Ensure the temp path exists
-                            var tempSitePath = Path.Combine(_localTempPath, siteName);
-                            if (!Directory.Exists(tempSitePath))
-                            {
-                                Directory.CreateDirectory(tempSitePath);
-                            }
-
-                            // Create a package of the site and move it to local temp sites
-                            var packageFile = Path.Combine(tempSitePath, siteName + ".zip");
-                            _logger.InfoFormat("[IIS => Local Storage] - Creating a package of the site '{0}' and moving it to local temp sites '{1}'", siteName, packageFile);
-                            try
-                            {
-                                using (var deploymentObject = DeploymentManager.CreateObject(DeploymentWellKnownProvider.DirPath, sitePath))
-                                {
-                                    deploymentObject.SyncTo(DeploymentWellKnownProvider.Package, packageFile, new DeploymentBaseOptions(), new DeploymentSyncOptions());
-                                }
-
-                                _logger.DebugFormat(string.Format("Calling OnSiteUpdated event for {0}...", siteName));
-                                OnSiteUpdated(siteName);
-                                _siteDeployTimes[siteName] = DateTime.UtcNow;
-                            }
-                            catch (Exception ex)
-                            {
-                                UpdateSyncStatus(siteName, SyncInstanceStatus.Error, ex);
-                                throw;
-                            }
-                        }
+                foreach (var application in serverManager.Sites.SelectMany(s => s.Applications))
+                {
+                    var applicationName = application.Path.Split('/').Last();
+                    if (!string.IsNullOrEmpty(applicationName))
+                    {
+                        PackageSite(applicationName);
                     }
                 }
             }
@@ -467,6 +434,52 @@ namespace AzureWebFarm.Services
         #endregion
 
         #region Helpers
+        private void PackageSite(string siteName)
+        {
+            var sitePath = Path.Combine(_localSitesPath, siteName);
+            var siteLastModifiedTime = GetFolderLastModifiedTimeUtc(sitePath);
+
+            if (!_siteDeployTimes.ContainsKey(siteName))
+            {
+                _siteDeployTimes.Add(siteName, siteLastModifiedTime);
+            }
+
+            _logger.DebugFormat("[IIS => Local Storage] - Site last modified time: '{0}'", siteLastModifiedTime);
+
+            // If the site has been modified since the last deploy, but not within the last {SyncWait}s (otherwise it might be mid-sync)
+            if (_siteDeployTimes[siteName] < siteLastModifiedTime && siteLastModifiedTime < DateTime.UtcNow.AddSeconds(-SyncWait))
+            {
+                // Update status to deployed
+                UpdateSyncStatus(siteName, SyncInstanceStatus.Deployed);
+
+                // Ensure the temp path exists
+                var tempSitePath = Path.Combine(_localTempPath, siteName);
+                if (!Directory.Exists(tempSitePath))
+                {
+                    Directory.CreateDirectory(tempSitePath);
+                }
+
+                // Create a package of the site and move it to local temp sites
+                var packageFile = Path.Combine(tempSitePath, siteName + ".zip");
+                _logger.InfoFormat("[IIS => Local Storage] - Creating a package of the site '{0}' and moving it to local temp sites '{1}'", siteName, packageFile);
+                try
+                {
+                    using (var deploymentObject = DeploymentManager.CreateObject(DeploymentWellKnownProvider.DirPath, sitePath))
+                    {
+                        deploymentObject.SyncTo(DeploymentWellKnownProvider.Package, packageFile, new DeploymentBaseOptions(), new DeploymentSyncOptions());
+                    }
+
+                    _logger.DebugFormat(string.Format("Calling OnSiteUpdated event for {0}...", siteName));
+                    OnSiteUpdated(siteName);
+                    _siteDeployTimes[siteName] = DateTime.UtcNow;
+                }
+                catch (Exception ex)
+                {
+                    UpdateSyncStatus(siteName, SyncInstanceStatus.Error, ex);
+                    throw;
+                }
+            }
+        }
 
         private DateTime GetFolderLastModifiedTimeUtc(string sitePath)
         {
