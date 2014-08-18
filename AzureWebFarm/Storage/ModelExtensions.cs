@@ -18,7 +18,8 @@ namespace AzureWebFarm.Storage
                 Name = row.Name,
                 Description = row.Description,
                 EnableTestChildApplication = row.EnableTestChildApplication.GetValueOrDefault(),
-                EnableCDNChildApplication = row.EnableCDNChildApplication.GetValueOrDefault()
+                EnableCDNChildApplication = row.EnableCDNChildApplication.GetValueOrDefault(),
+                Parent = row.ParentId.HasValue ? new WebSite(row.ParentId.Value) : null
             };
         }
 
@@ -34,7 +35,8 @@ namespace AzureWebFarm.Storage
                 Name = model.Name,
                 Description = model.Description,
                 EnableTestChildApplication = model.EnableTestChildApplication,
-                EnableCDNChildApplication = model.EnableCDNChildApplication
+                EnableCDNChildApplication = model.EnableCDNChildApplication,
+                ParentId = model.Parent == null ? null : (Guid?)model.Parent.Id
             };
         }
 

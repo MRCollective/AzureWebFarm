@@ -91,7 +91,7 @@ namespace AzureWebFarm.Services
                 }
             }
 
-            foreach (var site in sites)
+            foreach (var site in sites.Where(p => p.Parent == null))
             {
                 using (var serverManager = new ServerManager())
                 {
@@ -102,31 +102,12 @@ namespace AzureWebFarm.Services
                     // Add new sites
                     if (iisSite == null)
                     {
-                        // Update Status
-                        _syncStatusRepository.UpdateStatus(siteName, SyncInstanceStatus.NotCreated);
-
-                        // Create physical path
-                        if (!Directory.Exists(sitePath))
-                        {
-                            Directory.CreateDirectory(sitePath);
-                        }
-
-                        using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("AzureWebFarm.Resources.index.html"))
-                        {
-                            var fileContent = new StreamReader(stream).ReadToEnd().Replace("{WebSiteName}", siteName);
-                            File.WriteAllText(Path.Combine(sitePath, "index.html"), fileContent);
-                        }
-
-                        using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("AzureWebFarm.Resources.site.css"))
-                        {
-                            var fileContent = new StreamReader(stream).ReadToEnd();
-                            File.WriteAllText(Path.Combine(sitePath, "site.css"), fileContent);
-                        }
+                        InitialiseNewSite(siteName, sitePath);
 
                         // Add web site
                         _logger.InfoFormat("Adding site '{0}'", siteName);
 
-                        var defaultBinding = site.Bindings.First();
+                        var defaultBinding = site.Bindings.FirstOrDefault() ?? new Binding { Port = 443, Protocol = "https", HostName = siteName };
 
                         X509Certificate2 cert = null;
 
@@ -170,7 +151,7 @@ namespace AzureWebFarm.Services
                         iisSite.ApplicationDefaults.ApplicationPoolName = appPool.Name;
 
                         // Update TEST and CDN applications
-                        UpdateApplications(site, serverManager, siteName, sitePath, appPool);
+                        UpdateStandardApplications(site, serverManager, siteName, sitePath, appPool);
 
                         // Update Sync Status
                         _syncStatusRepository.UpdateStatus(siteName, SyncInstanceStatus.Created);
@@ -179,8 +160,10 @@ namespace AzureWebFarm.Services
                     {
                         // Update TEST and CDN applications
                         var appPool = serverManager.ApplicationPools.SingleOrDefault(ap => ap.Name.Equals(siteName, StringComparison.OrdinalIgnoreCase));
-                        UpdateApplications(site, serverManager, siteName, sitePath, appPool);
+                        UpdateStandardApplications(site, serverManager, siteName, sitePath, appPool);
                     }
+
+                    UpdateSubApplications(site, iisSite);
 
                     // Find bindings that need to be removed
                     foreach (var binding in iisSite.Bindings.ToArray())
@@ -232,6 +215,30 @@ namespace AzureWebFarm.Services
             }
         }
 
+        private void InitialiseNewSite(string siteName, string sitePath)
+        {
+            // Update Status
+            _syncStatusRepository.UpdateStatus(siteName, SyncInstanceStatus.NotCreated);
+
+            // Create physical path
+            if (!Directory.Exists(sitePath))
+            {
+                Directory.CreateDirectory(sitePath);
+            }
+
+            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("AzureWebFarm.Resources.index.html"))
+            {
+                var fileContent = new StreamReader(stream).ReadToEnd().Replace("{WebSiteName}", siteName);
+                File.WriteAllText(Path.Combine(sitePath, "index.html"), fileContent);
+            }
+
+            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("AzureWebFarm.Resources.site.css"))
+            {
+                var fileContent = new StreamReader(stream).ReadToEnd();
+                File.WriteAllText(Path.Combine(sitePath, "site.css"), fileContent);
+            }
+        }
+
         private X509Certificate2 GetCertificate(string certificateHash)
         {
             var store = new X509Store(StoreName.My, StoreLocation.LocalMachine);
@@ -248,7 +255,49 @@ namespace AzureWebFarm.Services
             return cert;
         }
 
-        private void UpdateApplications(WebSite site, ServerManager serverManager, string siteName, string sitePath, ApplicationPool appPool)
+        private void UpdateSubApplications(WebSite site, Site iisSite)
+        {
+            var applications = site.SubApplications.SelectMany(GetSubApplications);
+
+            var existingApplications = iisSite.Applications.Where(p => p.Path != "/").ToList();
+
+            var deletedApplications =
+                existingApplications.Where(a => !applications.Select(p => p.Name).Contains(a.Path.Split('/').Last())).ToList();
+            var newApplications =
+                applications.Where(a => !existingApplications.Select(p => p.Path.Split('/').Last()).Contains(a.Name));
+
+            deletedApplications.ForEach(a => iisSite.Applications.Remove(a));
+
+            foreach (var application in newApplications)
+            {
+                var physicalPath = Path.Combine(_localSitesPath, application.Name);
+                var applicationPath = "";
+
+                var currentApp = application;
+                do
+                {
+                    applicationPath = string.Format("/{0}{1}", currentApp.Name, applicationPath);
+                    currentApp = currentApp.Parent;
+                } while (currentApp.Parent != null);
+
+                InitialiseNewSite(application.Name, physicalPath);
+
+                iisSite.Applications.Add(applicationPath, physicalPath);
+
+                _syncStatusRepository.UpdateStatus(application.Name, SyncInstanceStatus.Created);
+            }
+        }
+
+        private IEnumerable<WebSite> GetSubApplications(WebSite site)
+        {
+            var applications = new List<WebSite> { site };
+
+            applications.AddRange(site.SubApplications.SelectMany(GetSubApplications));
+
+            return applications;
+        }
+
+        private void UpdateStandardApplications(WebSite site, ServerManager serverManager, string siteName, string sitePath, ApplicationPool appPool)
         {
             var iisSites = serverManager.Sites;
             var adminSite = iisSites[AzureRoleEnvironment.RoleWebsiteName()];

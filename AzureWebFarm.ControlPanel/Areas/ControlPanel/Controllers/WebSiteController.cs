@@ -22,11 +22,11 @@ namespace AzureWebFarm.ControlPanel.Areas.ControlPanel.Controllers
 
         public ActionResult Detail(Guid id)
         {
-            var site = _webSiteRepository.RetrieveWebSite(id);
+            var site = _webSiteRepository.RetrieveWebSiteWithSubApplications(id);
             var bindings = _webSiteRepository.RetrieveWebSiteBindings(id).OrderBy(b => b.HostName).ThenBy(b => b.Port).ToList();
             var syncStatuses = _syncStatusRepository.RetrieveSyncStatus(site.Name);
 
-            var model = new WebSiteDetailViewModel {Site = site, Bindings = bindings, SyncStatuses = syncStatuses};
+            var model = new WebSiteDetailViewModel(site, bindings, syncStatuses);
             return View(model);
         }
 
@@ -74,6 +74,30 @@ namespace AzureWebFarm.ControlPanel.Areas.ControlPanel.Controllers
             return RedirectToAction("Detail", new {area = ControlPanelAreaRegistration.Name, site.Id});
         }
 
+        public ActionResult CreateSubApplication(Guid id)
+        {
+            return View(new SubApplicationViewModel { ParentId = id });
+        }
+
+        [HttpPost]
+        public ActionResult CreateSubApplication(SubApplicationViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var site = new WebSite
+            {
+                Name = model.Name,
+                Description = model.Description,
+                EnableCDNChildApplication = model.EnableCDNChildApplication,
+                EnableTestChildApplication = model.EnableTestChildApplication,
+                Parent = new WebSite(model.ParentId)
+            };
+            _webSiteRepository.CreateWebSite(site);
+
+            return RedirectToAction("Detail", new { area = ControlPanelAreaRegistration.Name, site.Id });
+        }
+
         public ActionResult Edit(Guid id)
         {
             var website = _webSiteRepository.RetrieveWebSite(id);
@@ -100,6 +124,14 @@ namespace AzureWebFarm.ControlPanel.Areas.ControlPanel.Controllers
             _webSiteRepository.UpdateWebSite(website);
 
             return RedirectToAction("Detail", new { area = ControlPanelAreaRegistration.Name, model.Id });
+        }
+
+        [HttpPost]
+        public ActionResult Delete(Guid id)
+        {
+            _webSiteRepository.RemoveWebSite(id);
+
+            return RedirectToAction("Index", "Dashboard");
         }
     }
 
@@ -141,10 +173,47 @@ namespace AzureWebFarm.ControlPanel.Areas.ControlPanel.Controllers
         public string HostName { get; set; }
     }
 
+    public class SubApplicationViewModel : WebSiteViewModel
+    {
+        public Guid ParentId { get; set; }
+
+        public Guid Id { get; set; }
+
+        public int Depth { get; set; }
+    }
+
     public class WebSiteDetailViewModel
     {
+        public WebSiteDetailViewModel(WebSite site, IEnumerable<Binding> bindings, IEnumerable<SyncStatus> syncStatuses)
+        {
+            Site = site;
+            Bindings = bindings;
+            SyncStatuses = syncStatuses;
+            SubApplications = site.SubApplications.SelectMany(GetSubApplicationViewModels);
+        }
+
         public WebSite Site { get; set; }
+        public IEnumerable<SubApplicationViewModel> SubApplications { get; set; }
         public IEnumerable<Binding> Bindings { get; set; }
         public IEnumerable<SyncStatus> SyncStatuses { get; set; }
+
+        protected IEnumerable<SubApplicationViewModel> GetSubApplicationViewModels(WebSite site)
+        {
+            var subApplicationViewModel = new SubApplicationViewModel
+            {
+                Id = site.Id,
+                Name = site.Name,
+                Depth = site.Depth,
+            };
+
+            var sites = new List<SubApplicationViewModel>
+            {
+                subApplicationViewModel
+            };
+
+            sites.AddRange(site.SubApplications.SelectMany(GetSubApplicationViewModels));
+
+            return sites;
+        }
     }
 }

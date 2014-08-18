@@ -18,6 +18,7 @@ namespace AzureWebFarm.Storage
         void UpdateBinding(Binding binding);
         void RemoveWebSite(Guid webSiteId);
         WebSite RetrieveWebSite(Guid webSiteId);
+        WebSite RetrieveWebSiteWithSubApplications(Guid webSiteId);
         Binding RetrieveBinding(Guid bindingId);
         WebSite RetrieveWebSiteWithBindings(Guid webSiteId);
         IList<Binding> RetrieveWebSiteBindings(Guid webSiteId);
@@ -112,6 +113,16 @@ namespace AzureWebFarm.Storage
             // ReSharper restore ReplaceWithSingleCallToFirstOrDefault
         }
 
+        public WebSite RetrieveWebSiteWithSubApplications(Guid webSiteId)
+        {
+            var site = RetrieveWebSite(webSiteId);
+
+            site.SubApplications = _webSiteTable.CreateQuery<WebSiteRow>().Where(ws => ws.ParentId.Value == webSiteId).ToList()
+                .Select(p => RetrieveWebSiteWithSubApplications(p.ToModel(), site)).ToList();
+
+            return site;
+        }
+
         public Binding RetrieveBinding(Guid bindingId)
         {
             var key = bindingId.ToString();
@@ -168,7 +179,23 @@ namespace AzureWebFarm.Storage
 
         public IList<WebSite> RetrieveWebSites()
         {
-            return _webSiteTable.CreateQuery<WebSiteRow>().ToList().OrderBy(t => t.Name).Select(ws => ws.ToModel()).ToList();
+            var sites = _webSiteTable.CreateQuery<WebSiteRow>().ToList().Select(ws => ws.ToModel()).OrderBy(ws => ws.Name).ToList();
+
+            //Populate sites parents and children
+            sites.Where(ws => ws.Parent != null).ToList().ForEach(site =>
+            {
+                var parent = sites.FirstOrDefault(p => p.Id == site.Parent.Id);
+                site.Parent = parent;
+
+                if (parent == null) return;
+
+                parent.SubApplications.Add(site);
+            });
+
+            var orderedTreeList = new List<WebSite>();
+            sites.Where(ws => ws.Parent == null).ToList().ForEach(site => SortTree(site, orderedTreeList));
+
+            return orderedTreeList;
         }
 
         public IList<WebSite> RetrieveWebSitesWithBindings()
@@ -181,6 +208,23 @@ namespace AzureWebFarm.Storage
             }
 
             return sites;
+        }
+
+        private void SortTree(WebSite site, IList<WebSite> orderedList)
+        {
+            orderedList.Add(site);
+            site.SubApplications.ForEach(ws => SortTree(ws, orderedList));
+        }
+
+        private WebSite RetrieveWebSiteWithSubApplications(WebSite site, WebSite parent)
+        {
+            site.Parent = parent;
+            // ReSharper disable ReplaceWithSingleCallToFirstOrDefault
+            site.SubApplications = _webSiteTable.CreateQuery<WebSiteRow>().Where(ws => ws.ParentId.Value == site.Id).ToList()
+                .Select(p => RetrieveWebSiteWithSubApplications(p.ToModel(), site)).ToList();
+            // ReSharper restore ReplaceWithSingleCallToFirstOrDefault
+
+            return site;
         }
     }
 }

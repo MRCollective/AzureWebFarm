@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Text;
 using WindowsAzure.Storage.Services;
 using AzureWebFarm.Entities;
 using AzureWebFarm.Storage;
@@ -14,19 +15,28 @@ namespace AzureWebFarm.AdminConsole
     {
         static void Main()
         {
-            Console.Write("Enter the storage account name: ");
+            Console.OutputEncoding = Encoding.GetEncoding(866);
+
+            Console.Write("Enter the storage account name (leave blank for development storage): ");
             var accountName = Console.ReadLine();
-            Console.Write("Enter the storage account key: ");
-            var accountKey = Console.ReadLine();
-            
-            var repo = new WebSiteRepository(new AzureStorageFactory(new CloudStorageAccount(new StorageCredentials(accountName, accountKey), true)));
+
+            var accountKey = "";
+            if (!string.IsNullOrEmpty(accountName))
+            {
+                Console.Write("Enter the storage account key: ");
+                accountKey = Console.ReadLine();
+            }
+
+            var account = string.IsNullOrEmpty(accountName)
+                ? CloudStorageAccount.DevelopmentStorageAccount
+                : new CloudStorageAccount(new StorageCredentials(accountName, accountKey), true);
+
+            var repo = new WebSiteRepository(new AzureStorageFactory(account));
 
             var sites = repo.RetrieveWebSitesWithBindings();
-            var i = 0;
-            foreach (var site in sites)
-            {
-                Console.WriteLine("{0}. {1}", ++i, site.Name);
-            }
+
+            PrintTree(sites);
+
             Console.Write("Which site do you want to edit (0) for new site: ");
             var siteNo = Convert.ToInt32(Console.ReadLine());
 
@@ -52,11 +62,38 @@ namespace AzureWebFarm.AdminConsole
             }
             else
             {
-                EditWebSite(sites[siteNo-1]);
-                repo.UpdateWebSite(sites[siteNo-1]);
-                foreach (var binding in sites[siteNo-1].Bindings)
+                Console.Write(sites[siteNo - 1].SubApplications.Any() ? "(E)dit site or (A)dd sub application?: " : "(E)dit site, (A)dd sub application or (D)elete site?: ");
+                var selection = Console.ReadLine().ToLower();
+                if (selection == "a")
                 {
-                    repo.UpdateBinding(binding);
+                    var site = new WebSite
+                    {
+                        Parent = new WebSite(sites[siteNo - 1].Id),
+                        EnableCDNChildApplication = false,
+                        EnableTestChildApplication = false,
+                        Name = "",
+                        Description = "",
+                        Bindings = new List<Binding>()
+                    };
+                    EditWebSite(site, false);
+                    repo.CreateWebSite(site);
+                }
+                else if (!sites[siteNo - 1].SubApplications.Any() && selection == "d")
+                {
+                    Console.Write("Are you sure you want to delete site {0}? This is irreversible! (Y for yes): ", sites[siteNo - 1].Name);
+                    if (Console.ReadLine().ToLower() == "y")
+                    {
+                        repo.RemoveWebSite(sites[siteNo - 1].Id);
+                    }
+                }
+                else
+                {
+                    EditWebSite(sites[siteNo - 1]);
+                    repo.UpdateWebSite(sites[siteNo - 1]);
+                    foreach (var binding in sites[siteNo - 1].Bindings)
+                    {
+                        repo.UpdateBinding(binding);
+                    }
                 }
             }
         }
@@ -73,7 +110,7 @@ namespace AzureWebFarm.AdminConsole
             };
         }
 
-        private static void EditWebSite(WebSite site)
+        private static void EditWebSite(WebSite site, bool promptBindings = true)
         {
             Console.WriteLine("Enter site information:");
             PromptAndSetValue(site, s => s.Name);
@@ -103,7 +140,7 @@ namespace AzureWebFarm.AdminConsole
                 Console.Write("Add another binding (Y for yes): ");
                 return Console.ReadLine().ToLower() == "y";
             };
-            while (checkForNewBinding())
+            while (promptBindings && checkForNewBinding())
             {
                 var binding = DefaultBinding();
                 EditBinding(binding);
@@ -156,6 +193,62 @@ namespace AzureWebFarm.AdminConsole
             }
 
             typeof(T).GetProperty(member).SetValue(obj, value, null);
+        }
+
+        private static void PrintTree(IList<WebSite> sites)
+        {
+            var prefixList = new List<string>();
+            var rootNodes = sites.Where(p => p.Parent == null);
+            var sitesOnly = !sites.Any(s => s.SubApplications.Any());
+
+            if (!sitesOnly)
+            {
+                foreach (var site in sites)
+                {
+                    var siblings = site.Parent == null ? rootNodes : site.Parent.SubApplications;
+                    var treePrefix = "";
+
+                    var currentParent = site.Parent;
+                    while (currentParent != null)
+                    {
+                        treePrefix = " " + treePrefix;
+
+                        var hasFutureSiblings = ((currentParent.Parent != null &&
+                                                  currentParent.Parent.SubApplications.Last() != currentParent) ||
+                                                 (currentParent.Parent == null && rootNodes.Last() != currentParent));
+
+                        treePrefix = (hasFutureSiblings ? "\u2502" /*│*/ : " ") + treePrefix;
+
+                        currentParent = currentParent.Parent;
+                    }
+
+                    if (rootNodes.FirstOrDefault() == site)
+                    {
+                        treePrefix += rootNodes.LastOrDefault() == site ? "" : "\u250c"; /*┌*/
+                    }
+                    else
+                    {
+                        treePrefix += siblings.LastOrDefault() != site ? "\u251c" /*├*/ : "\u2514"; /*└*/
+                    }
+
+                    treePrefix += "\u2500"; /*─*/
+
+                    prefixList.Add(treePrefix);
+
+                }
+            }
+
+            var padding = string.Join("", Enumerable.Range(0, sites.Count().ToString().Length).Select(p => " ").ToList());
+            for (var i = 1; i <= sites.Count(); i++)
+            {
+                var itemPrefix = sitesOnly ? padding : prefixList[i - 1];
+                if (!sitesOnly)
+                {
+                    itemPrefix = itemPrefix.Insert(0, padding);
+                }
+                itemPrefix = itemPrefix.Remove(0, i.ToString().Length);
+                Console.WriteLine("{0}. {1}{2}", i, itemPrefix, sites[i - 1].Name);
+            }
         }
     }
 }

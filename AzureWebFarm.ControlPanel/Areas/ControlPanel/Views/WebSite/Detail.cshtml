@@ -7,28 +7,43 @@
 @helper BindingButtons(Binding b)
 {
     <a class="btn btn-primary" href="@Url.Action("Edit", "Binding", new {b.Id})"><span class="glyphicon glyphicon-cloud-upload"></span> Edit binding</a>
-    <form method="post" action="@Url.Action("Delete", "Binding", new {b.Id})" style="display: inline;"><button class="btn btn-danger" type="submit" onclick="return confirm('Are you sure you want to delete the binding for @b.Protocol://@b.HostName:@b.Port');"><span class="glyphicon glyphicon-remove"></span> Delete</button></form>
+    <form method="post" action="@Url.Action("Delete", "Binding", new {b.Id})" class="btn-group" ><button class="btn btn-danger" type="submit" onclick="return confirm('Are you sure you want to delete the binding for @b.Protocol://@b.HostName:@b.Port');"><span class="glyphicon glyphicon-remove"></span> Delete</button></form>
+}
+
+@functions
+{
+    private HtmlString NamePrefix(SubApplicationViewModel site)
+    {
+        var prefixes = Enumerable.Range(0, Math.Max(site.Depth - 1, 0)).Select(p => "&ensp;&ensp;").ToList();
+        if (site.Depth > 0)
+            prefixes.Add("&#9495;&#9592;");
+
+        return new HtmlString((string.Join("", prefixes)));
+    }
 }
 
 <h1>Website: @Model.Site.Name</h1>
 
-<div class="panel panel-primary">
-    <div class="panel-heading">Bindings</div>
-    <div class="panel-body">
-        <div class="table-responsive">
-            @Html.Grid(Model.Bindings).Attributes(@class => "table").Columns(c =>
-            {
-                c.For(b => b.Protocol + "://").Named("Protocol");
-                c.For(b => new HtmlString("<a href=\""+b.Protocol+"://"+b.HostName+":"+b.Port+"\" target=\"_blank\">"+b.HostName+"</a>")).Named("Host Name");
-                c.For(b => b.Port);
-                c.For(b => b.IpAddress);
-                c.For(b => new HtmlString(!string.IsNullOrEmpty(b.CertificateThumbprint) ? HttpUtility.HtmlEncode(b.CertificateThumbprint) : "<em>None</em>")).Named("Certificate Thumbprint");
-                c.For(b => BindingButtons(b)).Named("Actions");
-            })
+@if (Model.Site.Parent == null)
+{
+    <div class="panel panel-primary">
+        <div class="panel-heading">Bindings</div>
+        <div class="panel-body">
+            <div class="table-responsive">
+                @Html.Grid(Model.Bindings).Attributes(@class => "table").Columns(c =>
+                {
+                    c.For(b => b.Protocol + "://").Named("Protocol");
+                    c.For(b => new HtmlString("<a href=\"" + b.Protocol + "://" + b.HostName + ":" + b.Port + "\" target=\"_blank\">" + b.HostName + "</a>")).Named("Host Name");
+                    c.For(b => b.Port);
+                    c.For(b => b.IpAddress);
+                    c.For(b => new HtmlString(!string.IsNullOrEmpty(b.CertificateThumbprint) ? HttpUtility.HtmlEncode(b.CertificateThumbprint) : "<em>None</em>")).Named("Certificate Thumbprint");
+                    c.For(b => BindingButtons(b)).Named("Actions");
+                })
+            </div>
         </div>
     </div>
-</div>
-<p><a class="btn btn-info" href="@Url.Action("Create", "Binding", new {WebsiteId = Model.Site.Id})"><span class="glyphicon glyphicon-cloud-upload"></span> Create binding</a></p>
+    <p><a class="btn btn-info" href="@Url.Action("Create", "Binding", new {WebsiteId = Model.Site.Id})"><span class="glyphicon glyphicon-cloud-upload"></span> Create binding</a></p>
+}
 
 <div class="panel panel-primary">
     <div class="panel-heading">Sync Status</div>
@@ -46,6 +61,24 @@
     </div>
 </div>
 
-<form action="@Url.Action("Edit", "WebSite", new {Model.Site.Id})" method="get">
-    <button class="btn btn-info"><span class="glyphicon glyphicon-globe"></span> Edit website</button>
-</form>
+@if (Model.SubApplications.Any())
+{
+    <div class="panel panel-primary">
+        <div class="panel-heading">Sub Applications</div>
+        <div class="panel-body">
+            <div class="table-responsive">
+                @Html.Grid(Model.SubApplications).Attributes(@class => "table").Columns(c => c.For(site => Html.Raw(NamePrefix(site) + Html.ActionLink(site.Name, "Detail", "WebSite", new {id = site.Id}, null).ToHtmlString())).Named("Website"))
+            </div>
+        </div>
+    </div>
+}
+
+<a href="@Url.Action("Edit", "WebSite", new {Model.Site.Id})" class="btn btn-primary"><span class="glyphicon glyphicon-globe"></span> Edit website</a>
+<a href="@Url.Action("CreateSubApplication", "WebSite", new {Model.Site.Id})" class="btn btn-primary"><span class="glyphicon glyphicon-folder-open"></span> Create sub application</a>
+
+@if (!Model.SubApplications.Any())
+{
+    <form action="@Url.Action("Delete", "WebSite", new {Model.Site.Id})" method="post" class="btn-group">
+        <button class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this site?');"><span class="glyphicon glyphicon-remove"></span> Delete website</button>
+    </form>
+}

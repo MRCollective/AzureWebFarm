@@ -23,5 +23,7 @@ namespace AzureWebFarm.Storage
         public bool? EnableCDNChildApplication { get; set; }
 
         public bool? EnableTestChildApplication { get; set; }
+
+        public Guid? ParentId { get; set; }
     }
 }

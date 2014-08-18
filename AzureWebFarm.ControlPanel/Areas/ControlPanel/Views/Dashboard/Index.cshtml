@@ -9,7 +9,7 @@
         .Attributes(@class => "table")
         .Columns(c =>
         {
-            c.For(site => Html.ActionLink(site.Name, "Detail", "WebSite", new {area = ControlPanelAreaRegistration.Name, id = site.Id}, null)).Named("Website");
+            c.For(site => Html.Raw(NamePrefix(site) + Html.ActionLink(site.Name, "Detail", "WebSite", new { id = site.Id }, null).ToHtmlString())).Named("Website");
             foreach (var i in Model.Instances)
             {
                 var name = i.Name;
@@ -20,6 +20,18 @@
                     .Attributes(r => new Dictionary<string, object> { { "class", r.Item.SyncStatus[name].SyncStatus }, {"title", r.Item.SyncStatus[name].SyncStatus} });
             }
         });
+}
+
+@functions
+{
+    private HtmlString NamePrefix(DashboardViewModel.SiteViewModel site)
+    {
+        var prefixes = Enumerable.Range(0, Math.Max(site.Depth - 1, 0)).Select(p => "&ensp;&ensp;").ToList();
+        if (site.Depth > 0)
+            prefixes.Add("&#9495;&#9592;");
+
+        return new HtmlString((string.Join("", prefixes)));
+    }
 }
 
 @helper OutputSyncStatus(DashboardViewModel.SiteSyncViewModel syncStatus) {
