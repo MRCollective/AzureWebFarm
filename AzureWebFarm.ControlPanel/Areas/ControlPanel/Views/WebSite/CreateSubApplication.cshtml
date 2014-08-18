@@ -1,0 +1,23 @@
+﻿@using AzureWebFarm.ControlPanel.Areas.ControlPanel.Controllers
+@using ChameleonForms.Templates.TwitterBootstrap3
+@model SubApplicationViewModel
+
+<h1>Create Website</h1>
+
+@using (var f = Html.BeginChameleonForm())
+{
+    using (var s = f.BeginSection())
+    {
+        @Html.HiddenFor(m => m.ParentId)
+        @s.FieldFor(m => m.Name)
+        @s.FieldFor(m => m.Description)
+
+        @s.FieldFor(m => m.EnableCDNChildApplication)
+        @s.FieldFor(m => m.EnableTestChildApplication)
+    }
+    
+    using (var n = f.BeginNavigation())
+    {
+        @n.Submit("Create").WithStyle(EmphasisStyle.Primary).WithIcon("globe")
+    }
+}

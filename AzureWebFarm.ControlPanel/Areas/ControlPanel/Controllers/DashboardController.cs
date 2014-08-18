@@ -41,6 +41,7 @@ namespace AzureWebFarm.ControlPanel.Areas.ControlPanel.Controllers
             {
                 Id = w.Id,
                 Name = w.Name,
+                Depth = w.Depth,
                 SyncStatus = Instances.ToDictionary(
                     i => i.Name,
                     i => syncStatuses
@@ -73,6 +74,7 @@ namespace AzureWebFarm.ControlPanel.Areas.ControlPanel.Controllers
         {
             public Guid Id { get; set; }
             public string Name { get; set; }
+            public int Depth { get; set; }
             public Dictionary<string, SiteSyncViewModel> SyncStatus { get; set; }
         }
 
