@@ -1,6 +1,10 @@
 # Azure Web Farm #
 
-This is a refresh of the [Accelerator for Web Roles project](https://github.com/microsoft-dpe/wa-accelerator-webroles). The objective of this project is to allow people to continue using the goodness of Accelerator for Web Roles, but with an increasingly production ready and tested code base and an easier upgrade and setup pathway.
+## Notice
+
+This project is now fully deprecated by [Azure App Service](https://azure.microsoft.com/en-au/services/app-service/). We leave this here purely for interest, but do not recommend using it in a production environment.
+
+This was a refresh of the [Accelerator for Web Roles project](https://github.com/microsoft-dpe/wa-accelerator-webroles). The objective of this project is to allow people to continue using the goodness of Accelerator for Web Roles, but with an increasingly production ready and tested code base and an easier upgrade and setup pathway.
 
 ## About
 The Azure Web Farm allows you to use a Web Role and deploy multiple web sites via MsDeploy to it. It also allows you to run lightweight console applications in the background if they are deployed alongside your websites according to a particular convention.
