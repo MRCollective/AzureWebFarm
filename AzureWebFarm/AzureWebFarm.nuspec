@@ -1,0 +1,70 @@
+﻿<?xml version='1.0' encoding='UTF-8'?> 
+<package>
+  <metadata>
+    <id>
+      AzureWebFarm
+    </id>
+    <version>
+      1.0.0.0
+    </version>
+    <authors>
+      Robert Moore, Matt Davies
+    </authors>
+    <description>
+      MsDeploy enabled Web Farm using Web Roles in Azure based on Windows Azure Accelerator for Web Roles and including a background worker execution model.
+    </description>
+    <projectUrl>
+      https://github.com/MRCollective/AzureWebFarm
+    </projectUrl>
+    <licenseUrl>
+      https://github.com/MRCollective/AzureWebFarm/blob/master/LICENSE.txt
+    </licenseUrl>
+    <iconUrl>
+      https://raw.github.com/MRCollective/AzureWebFarm/master/logo.png
+    </iconUrl>
+    <releaseNotes>
+      Please see https://github.com/MRCollective/AzureWebFarm/blob/master/BREAKING_CHANGES.md for any breaking changes.
+    </releaseNotes>
+    <tags>
+      azure iis web-farm msdeploy web-deploy web-role
+    </tags>
+    <language>
+      en-US 
+    </language>
+    <dependencies>
+      <dependency id="WindowsAzure.Storage" version="4.0.0" />
+      <dependency id="WindowsAzure.Storage.Services" version="0.1.6-alpha" />
+      <dependency id="Microsoft.WindowsAzure.ConfigurationManager" version="2.0.3" />
+      <dependency id="Castle.Core" version="3.2.0" />
+      <dependency id="Autofac" version="3.1.5" />
+      <dependency id="ChameleonForms" version="1.0.1.3" />
+      <dependency id="Microsoft.AspNet.Mvc" version="4.0.30506.0" />
+      <dependency id="MvcContrib.Mvc3-ci" version="3.0.100.0" />
+    </dependencies>
+    <frameworkAssemblies>
+      <frameworkAssembly assemblyName="Microsoft.WindowsAzure.ServiceRuntime" targetFramework="net40" />
+      <frameworkAssembly assemblyName="Microsoft.WindowsAzure.Diagnostics" targetFramework="net40" />
+    </frameworkAssemblies>
+  </metadata>
+  <files>
+    <file src="..\readme.txt" />
+    <file src="..\AzureWebFarm\bin\Release\AzureWebFarm.dll" target="lib\NET40" />
+    <file src="..\AzureWebFarm\bin\Release\AzureWebFarm.pdb" target="lib\NET40" />
+    <!-- todo: <file src="AzureWebFarm\bin\Release\AzureWebFarm.XML" target="lib\NET40" />-->
+    <file src="..\AzureWebFarm.ControlPanel\bin\AzureWebFarm.ControlPanel.dll" target="lib\NET40" />
+    <file src="..\AzureWebFarm.ControlPanel\bin\AzureWebFarm.ControlPanel.pdb" target="lib\NET40" />
+    <file src="..\AzureWebFarm\bin\Release\Microsoft.Web.Administration.dll" target="lib\NET40" />
+    <file src="..\AzureWebFarm\bin\Release\Microsoft.Web.Deployment.dll" target="lib\NET40" />
+    <file src="..\AzureWebFarm.Example.Web\app.config" target="content" />
+    <file src="..\AzureWebFarm.Example.Web\web.config" target="content" />
+    <file src="..\AzureWebFarm.Example.Web\Probe.aspx.cs" target="content" />
+    <file src="..\AzureWebFarm.Example.Web\Probe.aspx" target="content" />
+    <file src="..\AzureWebFarm.Example.Web\Global.asax" target="content" />
+    <file src="..\AzureWebFarm.Example.Web\Global.asax.cs" target="content" />
+    <file src="..\AzureWebFarm.Example.Web\WebRole.cs" target="content" />
+    <file src="..\AzureWebFarm.Example.Web\Areas\Web.config" target="content\Areas" />
+    <file src="..\AzureWebFarm.Example.Cloud\ServiceConfiguration.Cloud.cscfg" target="tools\ExampleConfigs" />
+    <file src="..\AzureWebFarm.Example.Cloud\ServiceDefinition.csdef" target="tools\ExampleConfigs" />
+    <file src="..\AzureWebFarm.AdminConsole\bin\Release\*.*" target="tools\AdminConsole" />
+  </files>
+</package>

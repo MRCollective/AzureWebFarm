@@ -1,5 +1,6 @@
 ﻿using AzureWebFarm.Helpers;
 using Microsoft.WindowsAzure;
+using Microsoft.WindowsAzure.Storage;
 using NUnit.Framework;
 
 namespace AzureWebFarm.Tests.Services.Base

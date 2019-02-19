@@ -9,8 +9,8 @@ using AzureWebFarm.Storage;
 using Castle.Core.Logging;
 using Microsoft.Web.Administration;
 using Microsoft.Web.Deployment;
-using Microsoft.WindowsAzure;
-using Microsoft.WindowsAzure.StorageClient;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Blob;
 
 namespace AzureWebFarm.Services
 {
@@ -66,7 +66,7 @@ namespace AzureWebFarm.Services
 
             var sitesContainerName = AzureRoleEnvironment.GetConfigurationSettingValue(Constants.WebDeployPackagesBlobContainerKey).ToLowerInvariant();
             _container = storageAccount.CreateCloudBlobClient().GetContainerReference(sitesContainerName);
-            _container.CreateIfNotExist();
+            _container.CreateIfNotExists();
         }
         #endregion
 
@@ -190,8 +190,8 @@ namespace AzureWebFarm.Services
                     if (_entries.ContainsKey(siteName))
                     {
                         // Remove blob
-                        _container.GetBlobReference(siteName).DeleteIfExists();
-                        _container.GetBlobReference(siteName + "/" + siteName + ".zip").DeleteIfExists();
+                        _container.GetBlockBlobReference(siteName).DeleteIfExists();
+                        _container.GetBlockBlobReference(siteName + "/" + siteName + ".zip").DeleteIfExists();
                         
                         _entries.Remove(siteName);
                     }
@@ -217,11 +217,14 @@ namespace AzureWebFarm.Services
 
                 if (!_entries.ContainsKey(path) || _entries[path].LocalLastModified < entry.LocalLastModified)
                 {
-                    var newBlob = _container.GetBlobReference(path);
+                    var newBlob = _container.GetBlockBlobReference(path);
                     if (entry.IsDirectory)
                     {
                         newBlob.Metadata["IsDirectory"] = bool.TrueString;
-                        newBlob.UploadByteArray(new byte[0]);
+                        using (var ms = new MemoryStream())
+                        {
+                            newBlob.UploadFromStream(ms);
+                        }
                     }
                     else
                     {
@@ -233,7 +236,7 @@ namespace AzureWebFarm.Services
                         }
                     }
 
-                    entry.CloudLastModified = newBlob.Properties.LastModifiedUtc;
+                    entry.CloudLastModified = newBlob.Properties.LastModified;
                     _entries[path] = entry;
                 }
             }
@@ -269,21 +272,15 @@ namespace AzureWebFarm.Services
         {
             var seen = new HashSet<string>();
 
-            var blobs = _container.ListBlobs(
-                new BlobRequestOptions
-                {
-                    UseFlatBlobListing = true,
-                    BlobListingDetails = BlobListingDetails.Metadata
-                }).OfType<CloudBlob>();
+            var blobs = _container.ListBlobs(null, true, BlobListingDetails.Metadata).OfType<CloudBlockBlob>();
 
             foreach (var blob in blobs)
             {
                 var path = blob.Uri.ToString().Substring(_container.Uri.ToString().Length + 1);
                 var entry = new FileEntry
                 {
-                    CloudLastModified = blob.Properties.LastModifiedUtc,
-                    IsDirectory = blob.Metadata.AllKeys.Any(k => k.Equals("IsDirectory")) &&
-                                  blob.Metadata["IsDirectory"].Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase)
+                    CloudLastModified = blob.Properties.LastModified,
+                    IsDirectory = blob.Metadata.ContainsKey("IsDirectory") && blob.Metadata["IsDirectory"].Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase)
                 };
 
                 seen.Add(path);

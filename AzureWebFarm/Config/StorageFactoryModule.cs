@@ -1,6 +1,6 @@
-﻿using Autofac;
-using AzureToolkit;
-using Microsoft.WindowsAzure;
+﻿using WindowsAzure.Storage.Services;
+using Autofac;
+using Microsoft.WindowsAzure.Storage;
 
 namespace AzureWebFarm.Config
 {

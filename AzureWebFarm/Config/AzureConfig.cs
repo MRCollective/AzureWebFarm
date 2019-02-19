@@ -8,6 +8,7 @@ using System.Security.Principal;
 using AzureWebFarm.Helpers;
 using Microsoft.WindowsAzure;
 using Microsoft.WindowsAzure.ServiceRuntime;
+using Microsoft.WindowsAzure.Storage;
 
 namespace AzureWebFarm.Config
 {
@@ -21,27 +22,18 @@ namespace AzureWebFarm.Config
         {
             // Allow multiple simultaneous HTTP request threads
             ServicePointManager.DefaultConnectionLimit = 12;
-
-            // Allow Azure Storage to always use the latest version of a config setting
-            CloudStorageAccount.SetConfigurationSettingPublisher((configName, configSetter) =>
+            
+            AzureRoleEnvironment.Changed += (sender, arg) =>
             {
-                if (!AzureRoleEnvironment.IsAvailable())
+                // Restart the instance on any configuration change given we need to reinitialise our services
+
+                // https://alexandrebrisebois.wordpress.com/2013/09/29/handling-cloud-service-role-configuration-changes-in-windows-azure/
+                // http://msdn.microsoft.com/en-us/library/microsoft.windowsazure.serviceruntime.roleenvironment.changing.aspx
+                if ((arg.Changes.Any(change => change is RoleEnvironmentConfigurationSettingChange)))
                 {
-                    configSetter(ConfigurationManager.AppSettings[configName]);
-                    return;
+                    arg.Cancel = true;
                 }
-
-                configSetter(AzureRoleEnvironment.GetConfigurationSettingValue(configName));
-                // Apply any changes to config when the config is edited http://msdn.microsoft.com/en-us/library/windowsazure/gg494982.aspx
-                AzureRoleEnvironment.Changed += (sender, arg) =>
-                {
-                    if (!arg.Changes.OfType<RoleEnvironmentConfigurationSettingChange>().Any(change => (change.ConfigurationSettingName == configName)))
-                        return;
-
-                    if (!configSetter(AzureRoleEnvironment.GetConfigurationSettingValue(configName)))
-                        AzureRoleEnvironment.RequestRecycle();
-                };
-            });
+            };
 
             // Configure local resources
             var localTempPath = GetLocalResourcePathAndSetAccess(TempLocalResource);

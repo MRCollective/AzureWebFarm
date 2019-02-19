@@ -1,0 +1,22 @@
+﻿@using AzureWebFarm.ControlPanel.Areas.ControlPanel.Controllers
+@using ChameleonForms.Templates.TwitterBootstrap3
+@model EditBindingViewModel
+
+<h1>Create Binding</h1>
+
+@using (var f = Html.BeginChameleonForm())
+{
+    using (var s = f.BeginSection())
+    {
+        @s.FieldFor(m => m.HostName)
+        @s.FieldFor(m => m.IpAddress)
+        @s.FieldFor(m => m.Port)
+        @s.FieldFor(m => m.Protocol)
+        @s.FieldFor(m => m.CertificateThumbprint)
+    }
+    
+    using (var n = f.BeginNavigation())
+    {
+        @n.Submit("Edit").WithStyle(EmphasisStyle.Primary).WithIcon("cloud-upload")
+    }
+}

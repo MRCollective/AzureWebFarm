@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AzureWebFarm.Helpers;
 using Castle.Core.Logging;
+using Microsoft.WindowsAzure.Storage;
 
 namespace AzureWebFarm.Services
 {
@@ -51,13 +52,18 @@ namespace AzureWebFarm.Services
                                 {
                                     _logger.DebugFormat("This instance ({0}) has the lease, updating blob with the instance ID.", AzureRoleEnvironment.CurrentRoleInstanceId());
                                     blob.Metadata["InstanceId"] = AzureRoleEnvironment.CurrentRoleInstanceId();
-                                    blob.SetMetadata(lease.LeaseId);
+                                    blob.SetMetadata(AccessCondition.GenerateLeaseCondition(lease.LeaseId));
                                     _leaseId = lease.LeaseId;
                                 }
 
                                 _resetEvent.WaitOne(TimeSpan.FromSeconds(10));
                                 if (_cancellationToken.IsCancellationRequested)
+                                {
+                                    _logger.DebugFormat("Instance {0} removing InstanceId metadata from blob", AzureRoleEnvironment.CurrentRoleInstanceId());
+                                    blob.Metadata.Remove("InstanceId");
+                                    blob.SetMetadata(AccessCondition.GenerateLeaseCondition(_leaseId));
                                     return;
+                                }
                             }
                             if (!_cancellationToken.IsCancellationRequested)
                                 _leaseId = null;
@@ -80,31 +86,15 @@ namespace AzureWebFarm.Services
 
         public void Dispose()
         {
-            if (_cancellationToken != null && !_cancellationToken.IsCancellationRequested)
-            {
-                try
-                {
-                    _cancellationToken.Cancel();
-                    _resetEvent.Set();
-                }
-                catch (Exception ex)
-                {
-                    _logger.Error("An error occured cancelling the web deploy lease thread.", ex);
-                }
-            }
-            if (_leaseId == null) return;
-
+            if (_cancellationToken == null || _cancellationToken.IsCancellationRequested) return;
             try
             {
-                var blob = AzureRoleEnvironment.WebDeployLeaseBlob();
-                blob.TryReleaseLease(_leaseId);
-                blob.Metadata.Remove("InstanceId");
-                blob.SetMetadata();
-                _leaseId = null;
+                _cancellationToken.Cancel();
+                _resetEvent.Set();
             }
             catch (Exception ex)
             {
-                _logger.Error("An exception occured when attempting to clear the InstanceId from the web deploy lease metadata.", ex);
+                _logger.Error("An error occured cancelling the web deploy lease thread.", ex);
             }
         }
     }

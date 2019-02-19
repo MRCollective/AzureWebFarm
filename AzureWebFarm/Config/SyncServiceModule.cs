@@ -4,6 +4,7 @@ using AzureWebFarm.Services;
 using AzureWebFarm.Storage;
 using Castle.Core.Logging;
 using Microsoft.WindowsAzure;
+using Microsoft.WindowsAzure.Storage;
 
 namespace AzureWebFarm.Config
 {

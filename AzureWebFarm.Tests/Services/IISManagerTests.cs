@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using AzureToolkit;
+using WindowsAzure.Storage.Services;
 using AzureWebFarm.Entities;
 using AzureWebFarm.Helpers;
 using AzureWebFarm.Services;
 using AzureWebFarm.Storage;
 using Castle.Core.Logging;
 using Microsoft.Web.Administration;
-using Microsoft.WindowsAzure;
+using Microsoft.WindowsAzure.Storage;
 using NUnit.Framework;
 using Binding = AzureWebFarm.Entities.Binding;
 

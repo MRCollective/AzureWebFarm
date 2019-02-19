@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Web;
 using System.Web.Mvc;
-using AzureWebFarm.ControlPanel.App_Start;
+using AzureWebFarm.ControlPanel.Areas.ControlPanel.Controllers.Filters;
 using ChameleonForms;
 using ChameleonForms.ModelBinders;
 using ChameleonForms.Templates.TwitterBootstrap3;
@@ -18,6 +18,7 @@ namespace AzureWebFarm.ControlPanel
             HumanizedLabels.Register();
             ModelBinders.Binders.Add(typeof(DateTime), new DateTimeModelBinder());
             ModelBinders.Binders.Add(typeof(DateTime?), new DateTimeModelBinder());
+            GlobalFilters.Filters.Add(new ControlPanelLocalhostOnlyFilter());
         }
     }
 }

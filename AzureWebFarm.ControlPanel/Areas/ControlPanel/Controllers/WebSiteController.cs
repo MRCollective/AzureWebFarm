@@ -103,7 +103,7 @@ namespace AzureWebFarm.ControlPanel.Areas.ControlPanel.Controllers
         }
     }
 
-    public class WebSiterViewModel
+    public class WebSiteViewModel
     {
         [Required]
         [RegularExpression("^\\w+$", ErrorMessage = "Must only contain numbers, letters or underscores.")]
@@ -117,7 +117,7 @@ namespace AzureWebFarm.ControlPanel.Areas.ControlPanel.Controllers
         public bool EnableTestChildApplication { get; set; }
     }
 
-    public class EditWebSiteViewModel : WebSiterViewModel
+    public class EditWebSiteViewModel : WebSiteViewModel
     {
         public EditWebSiteViewModel() {}
 
@@ -132,7 +132,7 @@ namespace AzureWebFarm.ControlPanel.Areas.ControlPanel.Controllers
         public Guid Id { get; set; }
     }
 
-    public class CreateWebSiteViewModel : WebSiterViewModel
+    public class CreateWebSiteViewModel : WebSiteViewModel
     {
         public bool AddStandardBindings { get; set; }
 

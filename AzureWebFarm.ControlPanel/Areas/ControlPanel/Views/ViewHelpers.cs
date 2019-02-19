@@ -6,7 +6,7 @@ namespace AzureWebFarm.ControlPanel.Areas.ControlPanel.Views
 {
     public static class ViewHelpers
     {
-        public static IHtmlString OutputSyncTime(DateTime timestamp)
+        public static IHtmlString OutputSyncTime(DateTimeOffset timestamp)
         {
             var time = new TagBuilder("time");
             time.Attributes.Add("title", timestamp.ToString("o") + " GMT");

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using Castle.Core.Logging;
-using AzureToolkit;
 
 namespace AzureWebFarm.Helpers
 {
